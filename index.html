@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="">
+  <meta name="keywords" content="LightPlane provides a pair of highly scalable components for neural 3D fields in differentiable manner.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LightPlane: Highly-Scalable Components for Neural 3D Fields</title>
+
+	<meta property="og:title" content="LightPlane: Highly-Scalable Components for Neural 3D Fields" />
+	<meta property="og:description" content="LightPlane provides a pair of highly scalable components for neural 3D fields in differentiable manner." />
+  <!-- Twitter automatically scrapes this. Go to https://cards-dev.twitter.com/validator?
+      if you update and want to force Twitter to re-scrape. -->
+  <meta property="twitter:card"          content="summary" />
+  <meta property="twitter:title"         content="LightPlane: Highly-Scalable Components for Neural 3D Fields" />
+  <meta property="twitter:description"   content="LightPlane provides a pair of highly scalable components for neural 3D fields in differentiable manner." />
+
+  <!-- MathJax library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DWHXJCSRPQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-DWHXJCSRPQ');
+</script>
+
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <!-- <link rel="icon" href=""> -->
+
+
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <!-- <script src="./static/js/index.js"></script> -->
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <br>
+
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-3 publication-title" style="font-size: 2.2rem;">  LightPlane: Highly-Scalable Components for Neural 3D Fields</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://caoang327.github.io/">Ang Cao</a><sup>1, 2</sup>,
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <span class="author-block">
+              <a href="https://web.eecs.umich.edu/~justincj/">Justin Johnson</a><sup>2</sup>,
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <span class="author-block">
+              <a href="https://www.robots.ox.ac.uk/~vedaldi/">Andrea Vedaldi</a><sup>1</sup>,
+            </span>
+            &nbsp;&nbsp;&nbsp;
+            <span class="author-block">
+              <a href="https://d-novotny.github.io/">David Novotny</a><sup>1</sup>
+            </span>
+          </div>
+
+
+          <div class="is-size-5 publication-authors">
+            <!-- <span class="author-block"><sup>1</sup>Visual Geometry Group, University of Oxford,</span> -->
+            <span class="author-block" style="margin-right: 10px;"><sup>1</sup>Meta AI,</span>
+            <span class="author-block"><sup>2</sup>University of Michigan</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+                <!-- ArXiv Link. -->
+              <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <video id="teaser" autoplay muted loop playsinline height="100%">
+        <source src="resources/teaser_video.mp4"
+                type="video/mp4">
+      </video>
+      <!-- <h2 class="subtitle"> -->
+      <h2 class="subtitle" style="text-align: center;">
+        LightPlane Renderer achieves more than <b>1000x</b> reductions in memory usage while maintaining comparable rendering speeds to existing methods, when rendering images from neural 3D fields in a differentiable manner.
+      </h2>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <div class="columns is-centered">
+      <div class="column is-full-width has-text-centered">
+        <h2 class="title is-5">Abstract</h2>
+        <div class="content has-text-justified">
+            <p>
+                <b><em>LightPlane Renderer</em></b> and <b><em>Splatter</em></b> are a pair of highly scalable components for neural 3D fields that significantly reduce memory usage in 2D-3D mapping. 
+                <b><em>LightPlane Renderer</em></b> renders images from neural 3D fields, and <b><em>LightPlane Splatter</em></b> unprojects input images into neural 3D fields.
+                Both components work in a differentiable manner and significantly save memory usage.
+            </p>
+          <p>
+            Contemporary 3D research, particularly in reconstruction and generation, heavily relies on 2D images for inputs or supervision.
+            However, current designs for these 2D-3D mapping are memory-intensive, posing a significant bottleneck for existing methods and hindering new applications.
+            In response, we propose a pair of highly scalable components for 3D neural fields:  LightPlane  Renderer and Splatter, which significantly reduce memory usage in 2D-3D mapping.
+            These innovations enable the processing of vastly more and higher resolution images with small memory and computational costs.
+            We demonstrate their utility in various applications, from benefiting single-scene optimization with image-level losses to realizing a versatile pipeline for dramatically scaling 3D reconstruction and generation.
+         </p>
+          </p>
+        </div>
+        <br>
+
+
+        <h2 class="title is-5">Highly Memory-Efficient Components</h2>
+        <div class="content has-text-justified">
+          <p>
+            Compared to existing implementations of <span style="color: rgb(96, 130, 182)">rendering and lifting (unprojceting)</span>, <span style="color: rgb(137, 207, 240)">LightPlane Renderer and Splatter</span> exhibits over 3 orders of magnitude lower memory consumption at comparable speed. All axes are log-scaled.
+          </p>
+        </div>
+        <div class="content has-text-centered">
+            <img id="teaser" src="resources/memory_all.png" alt="Teaser image" style="width: 100%;">
+        </div>
+        <br>
+
+
+        <h2 class="title is-5">Boosting Large 3D Reconstruction and Generation Models </h2>
+        <div class="content has-text-justified">
+          <p>
+            The memory saving of LightPlane components significantly boosts the scalability of large 3D reconstruction and generation models, by dramatically increasing the size of input and output information.
+            Addtionally, the saved memory can be used to increase the model capacity and batch sizes. 
+            These lead to performance improvements in 3D reconstruction and generation.
+          </p>
+        </div>
+
+        <h2 class="title is-5">Large 3D Reconstruction Model using LightPlane </h2>
+
+        <div class="content has-text-centered">
+            <video id="teaser" autoplay muted loop playsinline height="100%">
+                <source src="resources/LRM.mp4"
+                        type="video/mp4">
+              </video>
+        </div>   
+
+        <h2 class="title is-5">3D Generation using LightPlane  </h2>
+
+        <div class="content has-text-centered">
+            <video id="teaser" autoplay muted loop playsinline height="100%">
+                <source src="resources/co3d.mp4"
+                        type="video/mp4">
+              </video>
+        </div>       
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@InProceedings{cao2024lightplane,
+  author    = {Cao, Ang and  and Johnson, Justin and Vedaldi, Andrea and Novotny, David},
+  title     = {LightPlane: Highly-Scalable Components for Neural 3D Fields},
+  year      = {2024}
+}</code></pre>
+  </div>
+</section>
+
+<section class="section" id="Acknowledgements">
+  <div class="container is-max-desktop content">
+    <h2 class="title">Acknowledgements</h2>
+    <p>
+        This work was done during Ang Cao's internship at Meta AI as well as at the University of Michigan, partially supported by a grant from LG AI Research.
+        We thank Roman Shapovalov, Jianyuan Wang, and Mohamed El Banani for their valuable help and discussions. 
+    </p>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This webpage template is adapted from <a
+            href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>, under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
