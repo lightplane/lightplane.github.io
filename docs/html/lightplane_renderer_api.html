@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lightplane Renderer API &mdash; Lightplane  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Lightplane Splatter API" href="lightplane_splatter_api.html" />
+    <link rel="prev" title="Memory &amp; Speed Benchmark" href="benchmark.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Lightplane
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feature_grids.html">3D feature grids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering_rays.html">Rendering rays</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_renderer.html">Lightplane Renderer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_splatter.html">Lightplane Splatter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cog_code_generator.html">COG Code Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Memory &amp; Speed Benchmark</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Lightplane Renderer API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.LightplaneRenderer"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.LightplaneRenderer.__init__"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.LightplaneRenderer.eval_decoder_at_points"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer.eval_decoder_at_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.LightplaneRenderer.get_decoder_params"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer.get_decoder_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.LightplaneRenderer.get_decoder_params_list"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer.get_decoder_params_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.LightplaneRenderer.eval_opacity_at_points"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer.eval_opacity_at_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.LightplaneRenderer.calculate_scaffold"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer.calculate_scaffold()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.LightplaneRenderer.forward"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.lightplane_renderer"><code class="docutils literal notranslate"><span class="pre">lightplane_renderer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_splatter_api.html">Lightplane Splatter API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering_rays_api.html">Rendering rays API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mlp_api.html">MLP API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naive_implementation_api.html">Naive Implementation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation_api.html">Visualization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc_utilities_api.html">Misc Utilities API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Lightplane</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Lightplane Renderer API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/lightplane_renderer_api.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="lightplane-renderer-api">
+<h1>Lightplane Renderer API<a class="headerlink" href="#lightplane-renderer-api" title="Link to this heading"></a></h1>
+<p>The renderer API consists of two main components:</p>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="#lightplane.LightplaneRenderer" title="lightplane.LightplaneRenderer"><span class="xref myst py py-class"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer</span></code></span></a> module</strong> which holds learnable parameters of the mlp decoder and can be reused to render different input grids</p></li>
+<li><p><strong><a class="reference internal" href="#lightplane.lightplane_renderer" title="lightplane.lightplane_renderer"><span class="xref myst py py-func"><code class="docutils literal notranslate"><span class="pre">lightplane_renderer</span></code></span></a> function</strong> providing the lowest-level interface to the renderer.</p></li>
+</ul>
+<p>Visit the <a class="reference internal" href="lightplane_renderer.html"><span class="std std-doc">Lightplane Renderer</span></a> section for a more detailed overview of the renderer’s functionality.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightplane.LightplaneRenderer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">LightplaneRenderer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlp_hidden_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlp_n_layers_opacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlp_n_layers_trunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlp_n_layers_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_separate_color_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity_init_bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_direction_dependent_colors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ray_embedding_num_harmonics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples_inf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out_of_bounds_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disparity_at_inf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_jitter_near_far</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_log_transmittance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triton_block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triton_num_warps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_naive_impl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightplane/renderer_module.html#LightplaneRenderer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.LightplaneRenderer" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="lightplane.LightplaneRenderer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlp_hidden_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlp_n_layers_opacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlp_n_layers_trunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlp_n_layers_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_separate_color_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity_init_bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_direction_dependent_colors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ray_embedding_num_harmonics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples_inf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out_of_bounds_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disparity_at_inf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_jitter_near_far</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_log_transmittance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triton_block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triton_num_warps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_naive_impl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/lightplane/renderer_module.html#LightplaneRenderer.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.LightplaneRenderer.__init__" title="Link to this definition"></a></dt>
+<dd><p>This is the Pytorch Module for the Lightplane Renderer.
+It uses <cite>lightplane_renderer</cite> as the core function for rendering and
+automatically initialize the parameters for the MLPs used in the renderer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_samples</strong> – Number of samples to render.</p></li>
+<li><p><strong>color_chn</strong> – Number of channels for the rendererd color.</p></li>
+<li><p><strong>grid_chn</strong> – Number of channels for the 3D grid to be rendered.</p></li>
+<li><p><strong>mlp_hidden_chn</strong> – Number of hidden channels for all MLPs.</p></li>
+<li><p><strong>mlp_n_layers_opacity</strong> – Number of layers for <cite>opacity_mlp</cite>.</p></li>
+<li><p><strong>mlp_n_layers_trunk</strong> – Number of layers for <cite>trunk_mlp</cite>.</p></li>
+<li><p><strong>mlp_n_layers_color</strong> – Number of layers for <cite>color_mlp</cite>.</p></li>
+<li><p><strong>use_separate_color_grid</strong> – Whether using a separate grid-list for
+colors.</p></li>
+<li><p><strong>opacity_init_bias</strong> – Initial bias for <cite>opacity_mlp</cite>.</p></li>
+<li><p><strong>gain</strong> – <cite>gain</cite> for the <cite>lightplane_renderer</cite>.</p></li>
+<li><p><strong>bg_color</strong> – Background color.</p></li>
+<li><p><strong>enable_direction_dependent_colors</strong> – Enable ray-direction dependent
+rendering.</p></li>
+<li><p><strong>ray_embedding_num_harmonics</strong> – Level of harmonic functions for
+ray-direction embedding.
+Setting ray_embedding_num_harmonics=0 will only use the
+ray direction as the ray encoding.
+A value bigger than 0 will append the harmonic embedding to the
+ray direction.
+Finally, setting ray_embedding_num_harmonics=None will use the
+ray <cite>encoding</cite> field from the <cite>Rays</cite> object input to forward.</p></li>
+<li><p><strong>num_samples_inf</strong> – Number of samples beyond the far plane.</p></li>
+<li><p><strong>mask_out_of_bounds_samples</strong> – Whether to mask out-of-bounds samples.</p></li>
+<li><p><strong>contract_coords</strong> – Whether to contract the coordinates as in MeRF.</p></li>
+<li><p><strong>disparity_at_inf</strong> – The beyond-far samples (their number-per-ray
+is determined by <cite>num_samples_inf</cite>) are sampled in the disparity space
+in <cite>range[far, 1 / disparity_at_inf]</cite>.</p></li>
+<li><p><strong>inject_noise_sigma</strong> – Standard deviation of the opacity noise to inject.</p></li>
+<li><p><strong>inject_noise_seed</strong> – Seed for the opacity noise to inject.</p></li>
+<li><p><strong>rays_jitter_near_far</strong> – Whether to jitter the near and far planes
+uniformly in range <cite>[-delta, delta]</cite>.</p></li>
+<li><p><strong>return_log_transmittance</strong> – Whether to return the log transmittance
+instead of the <cite>[0, 1]</cite> alpha mask.</p></li>
+<li><p><strong>use_naive_impl</strong> – Whether to use the naive pytorch implementation
+instead of triton.</p></li>
+<li><p><strong>triton_block_size</strong> – Block size for triton.</p></li>
+<li><p><strong>triton_num_warps</strong> – Number of warps for triton.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightplane.LightplaneRenderer.eval_decoder_at_points">
+<span class="sig-name descname"><span class="pre">eval_decoder_at_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pts_to_grid_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_feature_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaffold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out_of_bounds_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightplane/renderer_module.html#LightplaneRenderer.eval_decoder_at_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.LightplaneRenderer.eval_decoder_at_points" title="Link to this definition"></a></dt>
+<dd><p>Evaluates the MLP at the given points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pts</strong> – Points to evaluate the MLP at, shape <cite>[n_rays, n_pts, 3]</cite>.</p></li>
+<li><p><strong>pts_to_grid_idx</strong> – The grid index of each point, long tensor of shape
+<cite>[n_pts, ]</cite>.</p></li>
+<li><p><strong>rays_encoding</strong> – Ray encoding for each point.</p></li>
+<li><p><strong>feature_grid</strong> – feature grid.</p></li>
+<li><p><strong>color_feature_grid</strong> – color feature grid.</p></li>
+<li><p><strong>scaffold</strong> – <cite>scaffold</cite> for the MLP.</p></li>
+<li><p><strong>gain</strong> – <cite>gain</cite> for the <cite>lightplane_renderer</cite>.</p></li>
+<li><p><strong>mask_out_of_bounds_samples</strong> – Whether to mask out-of-bounds samples.</p></li>
+<li><p><strong>contract_coords</strong> – Whether to contract the coordinates as in MeRF.</p></li>
+<li><p><strong>directions</strong> – Per-ray viewing directions <cite>[n_rays, 3]</cite>;
+can be passed instead of <cite>rays_encoding</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightplane.LightplaneRenderer.get_decoder_params">
+<span class="sig-name descname"><span class="pre">get_decoder_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="mlp_api.html#lightplane.DecoderParams" title="lightplane.mlp_utils.DecoderParams"><span class="pre">DecoderParams</span></a></span></span><a class="reference internal" href="_modules/lightplane/renderer_module.html#LightplaneRenderer.get_decoder_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.LightplaneRenderer.get_decoder_params" title="Link to this definition"></a></dt>
+<dd><p>Helper function to get the <cite>DecoderParams</cite> object from the module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightplane.LightplaneRenderer.get_decoder_params_list">
+<span class="sig-name descname"><span class="pre">get_decoder_params_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightplane/renderer_module.html#LightplaneRenderer.get_decoder_params_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.LightplaneRenderer.get_decoder_params_list" title="Link to this definition"></a></dt>
+<dd><p>Helper function to get the list of weight matrices and bias vectors
+of the MLPs in the renderer’s decoder:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weights_trunk</strong> – Weight matrices of the trunk MLP.</p></li>
+<li><p><strong>biases_trunk</strong> – Bias vectors of the trunk MLP.</p></li>
+<li><p><strong>weights_opacity</strong> – Weight matrices of the opacity MLP.</p></li>
+<li><p><strong>biases_opacity</strong> – Bias vectors of the opacity MLP.</p></li>
+<li><p><strong>weights_color</strong> – Weight matrices of the color MLP.</p></li>
+<li><p><strong>biases_color</strong> – Bias vectors of the color MLP.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightplane.LightplaneRenderer.eval_opacity_at_points">
+<span class="sig-name descname"><span class="pre">eval_opacity_at_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pts_to_grid_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaffold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out_of_bounds_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_sizes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightplane/renderer_module.html#LightplaneRenderer.eval_opacity_at_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.LightplaneRenderer.eval_opacity_at_points" title="Link to this definition"></a></dt>
+<dd><p>Calcualte the opacities at the given points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pts</strong> – Points to evaluate at, shape <cite>[n_rays, n_pts, 3]</cite>.</p></li>
+<li><p><strong>pts_to_grid_idx</strong> – The grid index of each point, long tensor of shape
+<cite>[n_pts, ]</cite>.</p></li>
+<li><p><strong>feature_grid</strong> – Feature grid to render from.</p></li>
+<li><p><strong>scaffold</strong> – <cite>scaffold</cite> for the MLP.</p></li>
+<li><p><strong>gain</strong> – <cite>gain</cite> for the <cite>lightplane_renderer</cite>.</p></li>
+<li><p><strong>mask_out_of_bounds_samples</strong> – Whether to mask out-of-bounds samples.</p></li>
+<li><p><strong>grid_sizes</strong> – The size of the <cite>feature_grid</cite>. Only required if
+<cite>feature_grid</cite> is a 2D tensor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>results</strong> – Opacities at the given points. <cite>[n_rays, n_pts]</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightplane.LightplaneRenderer.calculate_scaffold">
+<span class="sig-name descname"><span class="pre">calculate_scaffold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaffold_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_sizes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilate_scaffold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightplane/renderer_module.html#LightplaneRenderer.calculate_scaffold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.LightplaneRenderer.calculate_scaffold" title="Link to this definition"></a></dt>
+<dd><p>Calculate <cite>scaffold</cite> by sampling voxel grid with the shape of
+<cite>scaffold_size</cite> and prunning points whose opacities are below
+<cite>threshold</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_grid</strong> – Feature grid to render from.</p></li>
+<li><p><strong>scaffold_size</strong> – <p>The shape of <cite>scaffold</cite>.
+<cite>scaffold</cite> should be a voxel grid with the same batch size as
+<cite>feature_grid</cite>.
+Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scaffold_size</span> <span class="o">=</span> <span class="p">[</span><span class="n">B</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">]</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>device</strong> – Tensor device.</p></li>
+<li><p><strong>threshold</strong> – The opacity threshold to prune points.</p></li>
+<li><p><strong>grid_sizes</strong> – The size of the <cite>feature_grid</cite>. Only required if
+<cite>feature_grid</cite> is a 2D tensor.</p></li>
+<li><p><strong>dilate_scaffold</strong> – Dilate opacities before thresholding to increase the
+extent of the occupied regions in the scaffold.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightplane.LightplaneRenderer.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="rendering_rays_api.html#lightplane.Rays" title="lightplane.Rays"><span class="pre">Rays</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_feature_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaffold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_sizes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_grid_sizes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples_inf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out_of_bounds_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disparity_at_inf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_jitter_near_far</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_log_transmittance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regenerate_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightplane/renderer_module.html#LightplaneRenderer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.LightplaneRenderer.forward" title="Link to this definition"></a></dt>
+<dd><p>Execute rendering with Lightplane Renderer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rays</strong> – <cite>Rays</cite> to render.</p></li>
+<li><p><strong>feature_grid</strong> – Feature grid to render from.</p></li>
+<li><p><strong>color_feature_grid</strong> – Color feature grid. If provided, the color will be
+rendered based on this grid.</p></li>
+<li><p><strong>scaffold</strong> – <cite>scaffold</cite> for the MLP.</p></li>
+<li><p><strong>grid_sizes</strong> – The size of the <cite>feature_grid</cite>. Only required if <cite>feature_grid</cite>
+is a 2D tensor.</p></li>
+<li><p><strong>color_grid_sizes</strong> – The size of the <cite>color_feature_grid</cite>. Only required if
+<cite>color_feature_grid</cite> is a 2D tensor.</p></li>
+<li><p><strong>bg_color</strong> – Background color.</p></li>
+<li><p><strong>num_samples</strong> – Number of samples to render.</p></li>
+<li><p><strong>gain</strong> – <cite>gain</cite> for the ‘lightplane_renderer’.</p></li>
+<li><p><strong>num_samples_inf</strong> – Number of samples beyond the far plane.</p></li>
+<li><p><strong>mask_out_of_bounds_samples</strong> – Whether to mask out-of-bounds samples.</p></li>
+<li><p><strong>contract_coords</strong> – Whether to contract the coordinates as in MeRF.</p></li>
+<li><p><strong>disparity_at_inf</strong> – The beyond-far samples (their number-per-ray is
+determined by <cite>num_samples_inf</cite>) are sampled in the disparity
+space in <cite>range[far, 1 / disparity_at_inf]</cite>.</p></li>
+<li><p><strong>inject_noise_sigma</strong> – Standard deviation of the opacity noise to inject.</p></li>
+<li><p><strong>inject_noise_seed</strong> – Seed for the opacity noise to inject.</p></li>
+<li><p><strong>rays_jitter_near_far</strong> – Whether to jitter the <cite>near</cite> and <cite>far</cite> planes
+uniformly in range [0, delta].</p></li>
+<li><p><strong>return_log_transmittance</strong> – Whether to return the log transmittance
+instead of the <cite>[0, 1]</cite> alpha mask.</p></li>
+<li><p><strong>regenerate_code</strong> – Whether to regenerate the code for the lightplane.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ray_length_render</strong> – The rendered ray length.</p></li>
+<li><p><strong>alpha</strong> – The alpha mask, either in range <cite>[0, 1]</cite> if</p></li>
+<li><p><strong>`return_log_transmittance=False` else real-valued log transmittance.</strong></p></li>
+<li><p><strong>feature_render</strong> – The rendered feature.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightplane.lightplane_renderer">
+<span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">lightplane_renderer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="rendering_rays_api.html#lightplane.Rays" title="lightplane.Rays"><span class="pre">Rays</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="mlp_api.html#lightplane.DecoderParams" title="lightplane.DecoderParams"><span class="pre">DecoderParams</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples_inf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out_of_bounds_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disparity_at_inf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaffold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_sizes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_grid_sizes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regenerate_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triton_block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triton_num_warps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightplane/lightplane_renderer.html#lightplane_renderer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.lightplane_renderer" title="Link to this definition"></a></dt>
+<dd><p>This is the main functional interface for the Lightplane Renderer.
+It outputs the the final color <cite>c</cite>, alpha value <cite>m</cite> and the expected
+ray-termination length <cite>r</cite> (analogous to depth) of each ray’s pixel.</p>
+<p>For <cite>N=num_samples</cite> equispaced 3D points <cite>pt_3d_i</cite> between the <cite>near</cite> and
+<cite>far</cite> ray-lengths, it samples the feature <cite>f_i(x_i)</cite> of 3D point
+<cite>pt_3d_i =x_i</cite> from the grid-list <cite>grid</cite> and calculate its corresponding
+renderering results.</p>
+<p>There are three MLPs: <cite>trunk_mlp</cite>, <cite>color_mlp</cite> and <cite>opacity_mlp</cite>, whose
+parameters are specified in <cite>decoder_params</cite>.</p>
+<ul>
+<li><p>trunk_mlp: Regresses the features from the <cite>f_i(x_i)</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e_i</span><span class="p">(</span><span class="n">x_i</span><span class="p">)</span> <span class="o">=</span> <span class="n">trunk_mlp</span><span class="p">(</span><span class="n">f_i</span><span class="p">(</span><span class="n">x_i</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p>color_mlp: Regresses target features (e.g. final colors) from the
+output of <cite>trunk_mlp</cite> with ray encoding as additional input.
+The dimension of the output is <cite>color_chn</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c_i</span><span class="p">(</span><span class="n">x_i</span><span class="p">)</span> <span class="o">=</span> <span class="n">color_mlp</span><span class="p">(</span><span class="n">e_i</span><span class="p">(</span><span class="n">x_i</span><span class="p">)</span> <span class="o">+</span> <span class="n">ray_encoding</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>opacity_mlp: Regresses the opacity scalar from the output of <cite>trunk_mlp</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">o_i</span><span class="p">(</span><span class="n">x_i</span><span class="p">)</span> <span class="o">=</span> <span class="n">opacity_mlp</span><span class="p">(</span><span class="n">e_i</span><span class="p">(</span><span class="n">x_i</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rays</strong> – <p>The rays to render features.
+It is an instance of <cite>Rays</cite>, with fields <cite>directions</cite>, <cite>origins</cite>,
+<cite>grid_idx</cite>, <cite>near</cite>, <cite>far</cite>, and <cite>encoding</cite>.
+<cite>grid_idx</cite> indicates the batch index of the 3D grid to sample
+features from:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x_i</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">rays</span><span class="o">.</span><span class="n">near</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">delta_i</span><span class="p">)</span> <span class="o">*</span> <span class="n">rays</span><span class="o">.</span><span class="n">direction</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>grid</strong> – <p>Grid-list (a list of 3D grids) to sample features from.
+Features are sampled from each 3D grid in the set and summed up as
+the final feature.
+<cite>grid</cite> contains <cite>N</cite> tensors, each with the shape:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">B</span><span class="p">,</span> <span class="n">D_1</span><span class="p">,</span> <span class="n">H_1</span><span class="p">,</span> <span class="n">W_1</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="o">...</span> <span class="p">,</span> <span class="p">[</span><span class="n">B</span><span class="p">,</span> <span class="n">D_N</span><span class="p">,</span> <span class="n">H_N</span><span class="p">,</span> <span class="n">W_N</span><span class="p">,</span> <span class="n">C</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>Each tensor must have 5 dimensions and all tensors should have
+the same batch size <cite>B</cite> and feature dimension <cite>C</cite>.</p>
+<p class="rubric">Example</p>
+<p>If <cite>grid</cite> is a single Voxel grid:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">B</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">C</span><span class="p">])]</span>
+</pre></div>
+</div>
+<p>If <cite>grid</cite> is a triplane:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">B</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">C</span><span class="p">]),</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">B</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">C</span><span class="p">]),</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">B</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">]),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><cite>lightplane_renderer</cite> can also work with <cite>grid</cite> as a 2D tensor,
+which is a stacked tensor from the grid-list <cite>grid</cite>, with the shape
+<cite>[sum_(i=1..N)(B * D_i * H_i * W_i), C]</cite>.
+In this case, the <cite>grid_sizes</cite> must be provided to specify the shape
+of each grid.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The 2D tensor can be obtained from <cite>lightplane.flatten_grid(grid)</cite>
+to flatten the list of tensors and to also obtain the <cite>grid_sizes</cite>
+argument.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Using 2D tensor inputs improves memory-effciency when grid-list is
+large in memory.</p>
+</div>
+</p></li>
+<li><p><strong>decoder_params</strong> – The parameters of the decoder MLPs:
+<cite>trunk_mlp</cite>, <cite>color_mlp</cite>, and <cite>opacity_mlp</cite>.</p></li>
+<li><p><strong>num_samples</strong> – <p>The number of sampled points along the ray.
+The samples are equispaced between <cite>rays.near</cite> and <cite>rays.far</cite>.
+More specifically, the <cite>j</cite>-th 3d point <cite>x_ij</cite> along <cite>i-th</cite> ray is
+defined as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x_ij</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">rays</span><span class="o">.</span><span class="n">near</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">delta_i</span><span class="p">)</span> <span class="o">*</span> <span class="n">rays</span><span class="o">.</span><span class="n">direction</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+    <span class="n">where</span><span class="p">:</span>
+        <span class="n">delta_i</span> <span class="o">=</span> <span class="p">(</span><span class="n">rays</span><span class="o">.</span><span class="n">far</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">rays</span><span class="o">.</span><span class="n">near</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">num_samples</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>gain</strong> – <p>A constant to scale the transmittance <cite>T_i</cite> of <cite>i</cite>-the point along a ray:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">T_i</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">gain</span> <span class="o">*</span> <span class="n">sum_</span><span class="p">{</span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">}</span><span class="o">^</span><span class="p">{</span><span class="n">i</span><span class="p">}</span> <span class="n">o</span><span class="p">(</span><span class="n">x_ij</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta_i</span><span class="p">)</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>num_samples_inf</strong> – <p>The number of background samples along the ray.
+The first background sample is placed at <cite>rays.far</cite>, and the samples
+are spaced in the disparity space until reaching the disparity of
+<cite>disparity_at_inf</cite>.</p>
+<p>More specifically, the j-th background 3d point <cite>b_ij</cite> along <cite>i-th</cite>
+ray is defined as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">b_ij</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">rays</span><span class="o">.</span><span class="n">far</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">bg_delta_ij</span><span class="p">)</span> <span class="o">*</span> <span class="n">rays</span><span class="o">.</span><span class="n">direction</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+    <span class="n">where</span><span class="p">:</span>
+        <span class="n">bg_delta_ij</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">disparity_ij</span>
+        <span class="n">disparity_ij</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">disparity_at_inf</span><span class="p">,</span> <span class="n">num_samples_inf</span><span class="p">)[</span><span class="n">j</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>These samples are additional to <cite>num_samples</cite>, i.e. the total number
+of samples along a ray is <cite>num_samples + num_samples_inf</cite>.</p>
+</p></li>
+<li><p><strong>mask_out_of_bounds_samples</strong> – Whether to mask samples that
+fall outside the [-1, 1] cube (does not apply when contraction with
+<cite>contract_coords</cite> is enabled).</p></li>
+<li><p><strong>contract_coords</strong> – <p>Whether to map the coordinates of the rendered
+points to always fall into the [-1, 1] cube. The contraction is implemented
+as in MeRF [1]:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                <span class="n">x</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>                       <span class="k">if</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span><span class="n">_inf</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+<span class="n">contract</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span><span class="n">_inf</span>             <span class="k">if</span> <span class="n">x_k</span> <span class="o">!=</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span><span class="n">_inf</span> <span class="o">&gt;</span> <span class="mi">1</span>
+                <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">x</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="n">x_k</span> <span class="o">/</span> <span class="o">|</span><span class="n">x_k</span><span class="o">|</span>   <span class="k">if</span> <span class="n">x_k</span> <span class="o">=</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span><span class="n">_inf</span> <span class="o">&gt;</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The contraction is useful for representing unbounded scenes.
+E.g. outdoor captures where the scene extends to infinity.</p>
+</div>
+</p></li>
+<li><p><strong>disparity_at_inf</strong> – The disparity value at infinity.</p></li>
+<li><p><strong>inject_noise_sigma</strong> – The variance of opacity noise to inject.</p></li>
+<li><p><strong>inject_noise_seed</strong> – The seed of the random noise to inject.</p></li>
+<li><p><strong>scaffold</strong> – A voxel grid with shape <cite>[B, D, H, W]</cite>, indicating the occupancy
+of the 3D space. If provided, the renderer will only render the points
+that are not empty in the scaffold.</p></li>
+<li><p><strong>color_grid</strong> – <p>Another grid-list (a list of 3D grids) storing color features.
+If provided, the renderer will regress the color from features
+sampled from <cite>color_grid</cite>, using <cite>color_mlp</cite>.</p>
+<p>Similar to <cite>grid</cite>, <cite>color_grid</cite> could also be a 2D tensor with
+<cite>color_grid_sizes</cite> provided.
+<cite>color_grid</cite> should be the same type as <cite>grid</cite>.</p>
+</p></li>
+<li><p><strong>grid_sizes</strong> – <p>It specifies the size of <cite>grid</cite>.
+It is optional when <cite>grid</cite> is a grid-list, but required when <cite>grid</cite>
+is a 2D tensor. Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grid_sizes</span> <span class="o">=</span> <span class="p">[[</span><span class="n">B</span><span class="p">,</span> <span class="n">D_1</span><span class="p">,</span> <span class="n">H_1</span><span class="p">,</span> <span class="n">W_1</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="o">...</span> <span class="p">,</span> <span class="p">[</span><span class="n">B</span><span class="p">,</span> <span class="n">D_N</span><span class="p">,</span> <span class="n">H_N</span><span class="p">,</span> <span class="n">W_N</span><span class="p">,</span> <span class="n">C</span><span class="p">]]</span><span class="o">.</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>color_grid_sizes</strong> – <p>It specifies the size of <cite>color_grid</cite> when <cite>color_grid</cite>
+is a 2D tensor.
+It is optional when <cite>color_grid</cite> is a grid-list, but required when
+<a href="#id1"><span class="problematic" id="id2">`</span></a>color_grid`is a 2D tensor. Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">color_grid_sizes</span> <span class="o">=</span> <span class="p">[[</span><span class="n">B</span><span class="p">,</span> <span class="n">D_1</span><span class="p">,</span> <span class="n">H_1</span><span class="p">,</span> <span class="n">W_1</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="o">...</span> <span class="p">,</span> <span class="p">[</span><span class="n">B</span><span class="p">,</span> <span class="n">D_N</span><span class="p">,</span> <span class="n">H_N</span><span class="p">,</span> <span class="n">W_N</span><span class="p">,</span> <span class="n">C</span><span class="p">]]</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>regenerate_code</strong> – If <cite>True</cite>, forces the regeneration of the triton code.</p></li>
+<li><p><strong>triton_block_size</strong> – The block size for Triton. Has to be higher than 16.</p></li>
+<li><p><strong>triton_num_warps</strong> – The number of warps for Triton.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>expected_depth</strong> – The expected depth of the ray.</p></li>
+<li><p><strong>negative_log_transmittances</strong> – The negative log transmittances of the ray.</p></li>
+<li><p><strong>expected_features</strong> – The expected features of the ray.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] MERF: Memory-Efficient Radiance Fields for Real-time View Synthesis in
+Unbounded Scenes, <a class="reference external" href="https://arxiv.org/abs/2302.12249">https://arxiv.org/abs/2302.12249</a></p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="benchmark.html" class="btn btn-neutral float-left" title="Memory &amp; Speed Benchmark" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="lightplane_splatter_api.html" class="btn btn-neutral float-right" title="Lightplane Splatter API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Meta AI Research.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

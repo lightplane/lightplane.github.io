@@ -1,0 +1,39 @@
+# Lightplane: Memory efficient mapping of information between 2D and 3D
+
+```{toctree}
+:maxdepth: 2
+
+feature_grids.md
+rendering_rays.md
+lightplane_renderer.md
+lightplane_splatter.md
+cog_code_generator.md
+```
+
+```{autosummary}
+:toctree: _autosummary
+:recursive:
+
+lightplane
+```
+
+```{eval-rst}
+:toctree: _autosummary
+:recursive:
+
+lightplane
+```
+
+
+
+# Refs for building the docs with sphinx + markdown (TODO: remove):
+https://github.com/readthedocs-examples/example-sphinx-basic/
+
+```
+    ```{literalinclude} example.py
+    :language: python
+    :emphasize-lines: 2-3
+    ```
+```
+
+https://coderefinery.github.io/documentation/sphinx/

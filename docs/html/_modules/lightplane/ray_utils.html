@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lightplane.ray_utils &mdash; Lightplane  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Lightplane
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../feature_grids.html">3D feature grids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rendering_rays.html">Rendering rays</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer.html">Lightplane Renderer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_splatter.html">Lightplane Splatter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cog_code_generator.html">COG Code Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark.html">Memory &amp; Speed Benchmark</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer_api.html">Lightplane Renderer API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_splatter_api.html">Lightplane Splatter API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rendering_rays_api.html">Rendering rays API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mlp_api.html">MLP API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../naive_implementation_api.html">Naive Implementation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../visualisation_api.html">Visualization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../misc_utilities_api.html">Misc Utilities API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Lightplane</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lightplane.ray_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lightplane.ray_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Meta Platforms, Inc. and affiliates.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># This source code is licensed under the BSD-style license found in the</span>
+<span class="c1"># LICENSE file in the root directory of this source tree.</span>
+
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">asdict</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">getLogger</span>
+
+
+<div class="viewcode-block" id="Rays">
+<a class="viewcode-back" href="../../rendering_rays_api.html#lightplane.Rays">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Rays</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dataclass for representing rendering or splatting rays.</span>
+
+<span class="sd">    The 3D point `x` along a ray emitted from a 3D coordinate `origin` in along</span>
+<span class="sd">    a 3D vector `direction` is given by:</span>
+<span class="sd">    ```</span>
+<span class="sd">    x = origin + t * direction</span>
+<span class="sd">    ```</span>
+<span class="sd">    where `t` is a scalar in range `[near, far]`.</span>
+<span class="sd">    Note that `direction` does not have to be l2-normalized.</span>
+
+<span class="sd">    In order to render multiple scenes given a single batch of rays, each ray</span>
+<span class="sd">    is associated with an integer index `grid_idx` which specifies the index of</span>
+<span class="sd">    its coresponding scene.</span>
+
+<span class="sd">    Optionally, the object can store an encoding of the rays: `encoding`.</span>
+<span class="sd">    This can be useful to define a user-specific encoding of the rays,</span>
+<span class="sd">    e.g. a custom version of the harmonic embedding originally proposed by NeRF. Note</span>
+<span class="sd">    that the dimensionality of the embedding has to match the number of channels</span>
+<span class="sd">    accepted by the corresponding MLP of Lightplane Renderer or Splatter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        directions: Tensor of shape `(B, 3)` storing the directions of `B` rays.</span>
+<span class="sd">        origins: Tensor of shape `(B, 3)` storing the origins of `B` rays.</span>
+<span class="sd">        grid_idx: 1D Tensor of shape `(B,)` storing an integer index of each ray into its</span>
+<span class="sd">            corresponding feature grid.</span>
+<span class="sd">        near: Tensor of shape `(B,)` storing the ray-length at which raymarching starts.</span>
+<span class="sd">        far: Tensor of shape `(B,)` storing the ray-length at which raymarching ends.</span>
+<span class="sd">        encoding: Optional Tensor of shape `(B, C)` storing the encoding of each ray.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">directions</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># B x 3</span>
+    <span class="n">origins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># B x 3</span>
+    <span class="n">grid_idx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># B</span>
+    <span class="n">near</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># B</span>
+    <span class="n">far</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># B</span>
+    <span class="n">encoding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># B x C</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assert_same_device</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the device on which the rays are stored.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            assert_same_device: If True, asserts that all tensors are on the same device.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            device: Device on which the rays are stored.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="o">.</span><span class="n">device</span>
+        <span class="k">if</span> <span class="n">assert_same_device</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">istensor</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                    <span class="k">assert</span> <span class="n">v</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="n">device</span><span class="p">,</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is on a different device (</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="si">}</span><span class="s2">,&quot;</span>
+                        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; expected </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="p">)</span>
+        <span class="k">return</span> <span class="n">device</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_validate_rays</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">origins</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid_idx</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">near</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">far</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Select a subset of the Rays object by indexing with `key`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: The indexing key.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new Rays object holding a subset of the rays given selected by `key`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rays_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">rays_dict</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="o">**</span><span class="n">rays_dict</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pad_to_block_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;Rays&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pads the rays to a multiple of block_size.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            block_size: Block size to pad to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            self_padded: Padded rays.</span>
+<span class="sd">            n_rays_padded: The number of added rays.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_rays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">n_blocks</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_rays</span> <span class="o">+</span> <span class="n">block_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">block_size</span>
+        <span class="n">n_rays_padded</span> <span class="o">=</span> <span class="n">n_blocks</span> <span class="o">*</span> <span class="n">block_size</span> <span class="o">-</span> <span class="n">n_rays</span>
+        <span class="k">if</span> <span class="n">n_rays_padded</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">rays_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">rays_dict</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">pads</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">ndim</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="n">pads</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_rays_padded</span>
+                    <span class="n">v_padded</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
+                        <span class="n">v</span><span class="p">,</span> <span class="n">pads</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span>
+                    <span class="p">)</span>
+                    <span class="n">rays_dict</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_padded</span>
+            <span class="n">self_padded</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="o">**</span><span class="n">rays_dict</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">self_padded</span> <span class="o">=</span> <span class="bp">self</span>
+
+        <span class="k">return</span> <span class="n">self_padded</span><span class="p">,</span> <span class="n">n_rays_padded</span>
+
+    <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Rays&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Match functionality of torch.Tensor.to()</span>
+<span class="sd">        If copy = True or the self Tensor is on a different device, the</span>
+<span class="sd">        returned tensor is a copy of self with the desired torch.device.</span>
+<span class="sd">        If copy = False and the self Tensor already has the correct torch.device,</span>
+<span class="sd">        then self is returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          device: Device (torch.device) for the new object.</span>
+<span class="sd">          copy: Boolean indicator whether or not to clone self. Default False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Pointclouds object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">copy</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="n">device</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="n">other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="n">device</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">other</span>
+
+        <span class="n">other</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">istensor</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">other</span>
+
+    <span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Rays&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deep copy of a Rays object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            new Rays object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="calc_harmonic_embedding">
+<a class="viewcode-back" href="../../rendering_rays_api.html#lightplane.calc_harmonic_embedding">[docs]</a>
+<span class="k">def</span> <span class="nf">calc_harmonic_embedding</span><span class="p">(</span><span class="n">directions</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">n_harmonic_functions</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates harmonic embedding for the given directions.</span>
+
+<span class="sd">    Note that the function is strongly inspired by PyTorch3D&#39;s implementation:</span>
+<span class="sd">        https://github.com/facebookresearch/pytorch3d/blob/c292c71c1adb0712c12cf4fa67a7a84ad9b44e5c/pytorch3d/renderer/implicit/harmonic_embedding.py#L12</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        directions: Ray directions. ... x 3.</span>
+<span class="sd">        n_harmonic_functions: Number of harmonic functions. If set to 0, the</span>
+<span class="sd">            function will only return the input directions, otherwise</span>
+<span class="sd">            returns the input directions concatenated with the harmonic</span>
+<span class="sd">            embeddings.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        encoding: Harmonic embedding. ... x n_harmonic_functions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_harmonic_functions</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># return the input directions</span>
+        <span class="k">return</span> <span class="n">directions</span>
+
+    <span class="n">device</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">directions</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">directions</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="n">frequencies</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">**</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+        <span class="n">n_harmonic_functions</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">zero_half_pi</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">pi</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">embed</span> <span class="o">=</span> <span class="n">directions</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">frequencies</span>
+    <span class="n">embed</span> <span class="o">=</span> <span class="n">embed</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">zero_half_pi</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">embed</span> <span class="o">=</span> <span class="n">embed</span><span class="o">.</span><span class="n">sin</span><span class="p">()</span>
+    <span class="n">embed</span> <span class="o">=</span> <span class="n">embed</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">directions</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">embed</span><span class="p">,</span> <span class="n">directions</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="calc_harmonic_embedding_dim">
+<a class="viewcode-back" href="../../rendering_rays_api.html#lightplane.calc_harmonic_embedding_dim">[docs]</a>
+<span class="k">def</span> <span class="nf">calc_harmonic_embedding_dim</span><span class="p">(</span><span class="n">n_harmonic_functions</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates the dimension of the harmonic embedding.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n_harmonic_functions</span>  <span class="c1"># sin, cos for each coordinate</span></div>
+
+
+
+<div class="viewcode-block" id="jitter_near_far">
+<a class="viewcode-back" href="../../rendering_rays_api.html#lightplane.jitter_near_far">[docs]</a>
+<span class="k">def</span> <span class="nf">jitter_near_far</span><span class="p">(</span><span class="n">near</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">far</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Jitters the near and far planes by a random offset in range [-delta, delta],</span>
+<span class="sd">    where delta = (far - near) / num_samples.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span><span class="n">far</span> <span class="o">-</span> <span class="n">near</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_samples</span>
+    <span class="n">offs</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">near</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta</span>
+    <span class="n">near</span> <span class="o">=</span> <span class="n">near</span> <span class="o">+</span> <span class="n">offs</span>
+    <span class="n">far</span> <span class="o">=</span> <span class="n">far</span> <span class="o">+</span> <span class="n">offs</span>
+    <span class="k">return</span> <span class="n">near</span><span class="p">,</span> <span class="n">far</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_validate_rays</span><span class="p">(</span>
+    <span class="n">directions</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">origins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">grid_idx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">near</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">far</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">encoding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Validates the Rays object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        directions: Ray directions. B x 3.</span>
+<span class="sd">        origins: Ray origins. B x 3.</span>
+<span class="sd">        grid_idx: Integer index of each ray into its corresponding grid in the batch. B.</span>
+<span class="sd">        near: Near plane distances. B.</span>
+<span class="sd">        far: Far plane distances. B.</span>
+<span class="sd">        encoding: Optional encoding of the rays. B x C.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_rays</span> <span class="o">=</span> <span class="n">directions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">directions</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="n">origins</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="n">grid_idx</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">near</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">far</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">grid_idx</span><span class="o">.</span><span class="n">is_floating_point</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">directions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">origins</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">directions</span><span class="o">.</span><span class="n">device</span>
+    <span class="k">for</span> <span class="n">vn</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;directions&quot;</span><span class="p">,</span> <span class="s2">&quot;origins&quot;</span><span class="p">,</span> <span class="s2">&quot;near&quot;</span><span class="p">,</span> <span class="s2">&quot;far&quot;</span><span class="p">,</span> <span class="s2">&quot;grid_idx&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="n">directions</span><span class="p">,</span> <span class="n">origins</span><span class="p">,</span> <span class="n">near</span><span class="p">,</span> <span class="n">far</span><span class="p">,</span> <span class="n">grid_idx</span><span class="p">],</span>
+    <span class="p">):</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="n">device</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">vn</span><span class="si">}</span><span class="s2"> is on a wrong device (</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="si">}</span><span class="s2">, expected </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_rays</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Unexpected number of elements in </span><span class="si">{</span><span class="n">vn</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, expected </span><span class="si">{</span><span class="n">n_rays</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">if</span> <span class="n">encoding</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">encoding</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="n">encoding</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_rays</span>
+        <span class="k">assert</span> <span class="n">encoding</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="n">device</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Meta AI Research.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

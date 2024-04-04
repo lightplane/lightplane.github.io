@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lightplane.misc_utils &mdash; Lightplane  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Lightplane
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../feature_grids.html">3D feature grids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rendering_rays.html">Rendering rays</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer.html">Lightplane Renderer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_splatter.html">Lightplane Splatter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cog_code_generator.html">COG Code Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark.html">Memory &amp; Speed Benchmark</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer_api.html">Lightplane Renderer API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_splatter_api.html">Lightplane Splatter API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rendering_rays_api.html">Rendering rays API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mlp_api.html">MLP API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../naive_implementation_api.html">Naive Implementation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../visualisation_api.html">Visualization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../misc_utilities_api.html">Misc Utilities API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Lightplane</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lightplane.misc_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lightplane.misc_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Meta Platforms, Inc. and affiliates.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># This source code is licensed under the BSD-style license found in the</span>
+<span class="c1"># LICENSE file in the root directory of this source tree.</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+
+<div class="viewcode-block" id="assert_shape">
+<a class="viewcode-back" href="../../misc_utilities_api.html#lightplane.misc_utils.assert_shape">[docs]</a>
+<span class="k">def</span> <span class="nf">assert_shape</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to assert the shape of a tensor.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: Input tensor.</span>
+<span class="sd">        shape: Expected shape of the input tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">shape</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;expected shape </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="flatten_grid">
+<a class="viewcode-back" href="../../misc_utilities_api.html#lightplane.misc_utils.flatten_grid">[docs]</a>
+<span class="k">def</span> <span class="nf">flatten_grid</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flattens a list of grids (grid-list) into a single 2D tensor, and return the</span>
+<span class="sd">    grid sizes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        grid: List of grids to flatten.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        grid_flat: Flattened grid, 2D tensor.</span>
+<span class="sd">        grid_sizes: Grid sizes, List[List[int]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">device</span>
+    <span class="n">grid_sizes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">grid</span><span class="p">],</span>
+        <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+    <span class="n">grid_flat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">grid</span><span class="p">],</span>
+        <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">grid_flat</span><span class="p">,</span> <span class="n">grid_sizes</span></div>
+
+
+
+<div class="viewcode-block" id="unflatten_grid">
+<a class="viewcode-back" href="../../misc_utilities_api.html#lightplane.misc_utils.unflatten_grid">[docs]</a>
+<span class="k">def</span> <span class="nf">unflatten_grid</span><span class="p">(</span>
+    <span class="n">grid</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">grid_sizes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unflattens a 2D tensor into a list of grids (grid-list), given the grid sizes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        grid: Flattened grid, 2D tensor.</span>
+<span class="sd">        grid_sizes: Grid sizes, e.g. `grid_sizes = torch.tensor([[1, 32, 32, 32, 64]])`</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        grid_list: List of grids. List[torch.Tensor, ...]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">grid_list_flat</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">split</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">grid_size</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span> <span class="k">for</span> <span class="n">grid_size</span> <span class="ow">in</span> <span class="n">grid_sizes</span><span class="p">],</span>
+        <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">grid_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">grid_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">grid_size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">grid_flat</span><span class="p">,</span> <span class="n">grid_size</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">grid_list_flat</span><span class="p">,</span> <span class="n">grid_sizes</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">grid_list</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="if_not_none_else">
+<a class="viewcode-back" href="../../misc_utilities_api.html#lightplane.misc_utils.if_not_none_else">[docs]</a>
+<span class="k">def</span> <span class="nf">if_not_none_else</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;If x is not None, return x, else return y.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">y</span></div>
+
+
+
+<div class="viewcode-block" id="pad_feature_to_block_size">
+<a class="viewcode-back" href="../../misc_utilities_api.html#lightplane.misc_utils.pad_feature_to_block_size">[docs]</a>
+<span class="k">def</span> <span class="nf">pad_feature_to_block_size</span><span class="p">(</span><span class="n">feature</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">block_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pads the feature to a multiple of block size, similar to pad_to_block_size in</span>
+<span class="sd">    `Ray` Class.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        block_size: Block size to pad to.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_rays</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n_blocks</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_rays</span> <span class="o">+</span> <span class="n">block_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">block_size</span>
+    <span class="n">n_rays_padded</span> <span class="o">=</span> <span class="n">n_blocks</span> <span class="o">*</span> <span class="n">block_size</span> <span class="o">-</span> <span class="n">n_rays</span>
+
+    <span class="k">if</span> <span class="n">n_rays_padded</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">pads</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">ndim</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">pads</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_rays_padded</span>
+        <span class="n">feature</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">pads</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">feature</span></div>
+
+
+
+<div class="viewcode-block" id="is_in_bounds">
+<a class="viewcode-back" href="../../misc_utilities_api.html#lightplane.misc_utils.is_in_bounds">[docs]</a>
+<span class="k">def</span> <span class="nf">is_in_bounds</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the points are within the bounds of [-1, 1] in all dimensions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_check_list_grid_sizes</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">grid_sizes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to check if the size of `grid` are consistent with `grid_sizes`.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        grid: List of grids.</span>
+<span class="sd">        grid_sizes: List of grid sizes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="p">)):</span>
+        <span class="n">assert_shape</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">grid_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+
+<span class="k">def</span> <span class="nf">check_grid</span><span class="p">(</span>
+    <span class="n">grid</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">grid_sizes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to check the shape of `grid` and `grid_sizes`.</span>
+
+<span class="sd">    If `grid` is a list, it checks if the shape of each grid in the list is the</span>
+<span class="sd">    same as the corresponding shape in `grid_sizes`, if `grid_sizes` is not None.</span>
+
+<span class="sd">    If `grid` is a 2D tensor, it checks (1) if the `grid_sizes` are specified, and</span>
+<span class="sd">    (2) total number of elements in `grid` is equal to the sum of the product of</span>
+<span class="sd">    each grid size in `grid_sizes`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">grid_sizes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_check_list_grid_sizes</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">grid_sizes</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">grid_sizes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;grid_sizes cannot be None when grid is a tensor&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">sum</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gs</span><span class="p">)</span> <span class="k">for</span> <span class="n">gs</span> <span class="ow">in</span> <span class="n">grid_sizes</span><span class="p">])</span> <span class="o">==</span> <span class="n">grid</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+        <span class="p">),</span> <span class="s2">&quot;grid_sizes has to be compatible to grid tensor shapes!&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;grid should be either tensor or list&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">grid_sizes</span>
+
+
+<div class="viewcode-block" id="check_grid_and_color_grid">
+<a class="viewcode-back" href="../../misc_utilities_api.html#lightplane.misc_utils.check_grid_and_color_grid">[docs]</a>
+<span class="k">def</span> <span class="nf">check_grid_and_color_grid</span><span class="p">(</span>
+    <span class="n">grid</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">color_grid</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">grid_sizes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">color_grid_sizes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to check the shape of `grid` and `grid_sizes`, as well as `color_grid`</span>
+<span class="sd">    and `color_grid_sizes`.</span>
+
+<span class="sd">    It checks the following:</span>
+<span class="sd">        1) `grid` and `color_grid` should have the same type if `color_grid` is not `None`.</span>
+<span class="sd">        2) `grid` and `color_grid` should have the same batch size and feature dimension</span>
+<span class="sd">           if `grid` is a list.</span>
+<span class="sd">        3) `grid_sizes` and `color_grid_sizes` should be compatible with the shapes of `grid`</span>
+<span class="sd">           and `color_grid` respectively.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">color_grid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span>
+            <span class="n">color_grid</span>
+        <span class="p">),</span> <span class="s2">&quot;grid and color_grid should have the same type&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">color_grid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
+                <span class="n">cg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">cg</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">color_grid</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+            <span class="p">),</span> <span class="s2">&quot;color_grid&#39;s batch size should be the same as grid&#39;s batch_size&quot;</span>
+            <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
+                <span class="n">cg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">cg</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">color_grid</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+            <span class="p">),</span> <span class="s2">&quot;color_grid&#39;s feature dimension should be the same as grid&#39;s feature dimension&quot;</span>
+
+            <span class="k">if</span> <span class="n">color_grid_sizes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_check_list_grid_sizes</span><span class="p">(</span><span class="n">color_grid</span><span class="p">,</span> <span class="n">color_grid_sizes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">grid_sizes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_check_list_grid_sizes</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">grid_sizes</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">grid_sizes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;grid_sizes cannot be None when grid is a tensor&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">sum</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gs</span><span class="p">)</span> <span class="k">for</span> <span class="n">gs</span> <span class="ow">in</span> <span class="n">grid_sizes</span><span class="p">])</span> <span class="o">==</span> <span class="n">grid</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+        <span class="p">),</span> <span class="s2">&quot;grid_sizes has to be compatible to grid tensor shapes!&quot;</span>
+
+        <span class="k">if</span> <span class="n">color_grid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">color_grid_sizes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="p">),</span> <span class="s2">&quot;color_grid_sizes cannot be None when color_grid is a tensor&quot;</span>
+
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="nb">sum</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gs</span><span class="p">)</span> <span class="k">for</span> <span class="n">gs</span> <span class="ow">in</span> <span class="n">color_grid_sizes</span><span class="p">])</span> <span class="o">==</span> <span class="n">color_grid</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+            <span class="p">),</span> <span class="s2">&quot;grid_sizes has to be compatible to grid tensor shapes!&quot;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;grid should be either tensor or list&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">color_grid</span><span class="p">,</span> <span class="n">grid_sizes</span><span class="p">,</span> <span class="n">color_grid_sizes</span></div>
+
+
+
+<div class="viewcode-block" id="process_and_flatten_grid">
+<a class="viewcode-back" href="../../misc_utilities_api.html#lightplane.misc_utils.process_and_flatten_grid">[docs]</a>
+<span class="k">def</span> <span class="nf">process_and_flatten_grid</span><span class="p">(</span>
+    <span class="n">grid</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">color_grid</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">grid_sizes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">color_grid_sizes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to process and flatten the `grid` and `color_grid`.</span>
+
+<span class="sd">    If `grid` is a grid-list, it flattens the grid-list into a single 2D tensor,</span>
+<span class="sd">    and return the grid sizes in the tensor form.</span>
+
+<span class="sd">    If `grid` is a tensor, it converts the `grid_size`s into tensor form.</span>
+
+<span class="sd">    If `color_grid` is not None, it processes and flattens the `color_grid` in the</span>
+<span class="sd">    same way as `grid`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">color_grid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">color_grid</span><span class="p">,</span> <span class="n">color_grid_sizes</span> <span class="o">=</span> <span class="n">flatten_grid</span><span class="p">(</span><span class="n">color_grid</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">color_grid</span><span class="p">,</span> <span class="n">color_grid_sizes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="n">grid</span><span class="p">,</span> <span class="n">grid_sizes</span> <span class="o">=</span> <span class="n">flatten_grid</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="n">grid_sizes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">grid_sizes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">color_grid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">color_grid_sizes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                <span class="n">color_grid_sizes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;grid should be flatten either tensor or list&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">color_grid</span><span class="p">,</span> <span class="n">grid_sizes</span><span class="p">,</span> <span class="n">color_grid_sizes</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Meta AI Research.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

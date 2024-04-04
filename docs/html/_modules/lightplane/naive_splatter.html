@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lightplane.naive_splatter &mdash; Lightplane  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Lightplane
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../feature_grids.html">3D feature grids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rendering_rays.html">Rendering rays</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer.html">Lightplane Renderer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_splatter.html">Lightplane Splatter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cog_code_generator.html">COG Code Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark.html">Memory &amp; Speed Benchmark</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer_api.html">Lightplane Renderer API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_splatter_api.html">Lightplane Splatter API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rendering_rays_api.html">Rendering rays API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mlp_api.html">MLP API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../naive_implementation_api.html">Naive Implementation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../visualisation_api.html">Visualization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../misc_utilities_api.html">Misc Utilities API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Lightplane</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lightplane.naive_splatter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lightplane.naive_splatter</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Meta Platforms, Inc. and affiliates.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># This source code is licensed under the BSD-style license found in the</span>
+<span class="c1"># LICENSE file in the root directory of this source tree.</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.checkpoint</span> <span class="kn">import</span> <span class="n">checkpoint</span>
+
+<span class="kn">from</span> <span class="nn">.misc_utils</span> <span class="kn">import</span> <span class="n">check_grid_and_color_grid</span><span class="p">,</span> <span class="n">is_in_bounds</span><span class="p">,</span> <span class="n">unflatten_grid</span>
+<span class="kn">from</span> <span class="nn">.mlp_utils</span> <span class="kn">import</span> <span class="n">SplatterParams</span><span class="p">,</span> <span class="n">_flattened_one_mlp_params_to_list</span>
+<span class="kn">from</span> <span class="nn">.naive_renderer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_contract_pi</span><span class="p">,</span>
+    <span class="n">_depth_inv_sphere</span><span class="p">,</span>
+    <span class="n">_eval_mlp</span><span class="p">,</span>
+    <span class="n">sample_grid_list_checkpointed</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.ray_utils</span> <span class="kn">import</span> <span class="n">Rays</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="n">VERBOSE</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">if</span> <span class="n">VERBOSE</span><span class="p">:</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span>
+        <span class="n">precision</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">edgeitems</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">linewidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
+        <span class="n">profile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">sci_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="lightplane_splatter_naive">
+<a class="viewcode-back" href="../../naive_implementation_api.html#lightplane.lightplane_splatter_naive">[docs]</a>
+<span class="k">def</span> <span class="nf">lightplane_splatter_naive</span><span class="p">(</span>
+    <span class="n">rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">,</span>
+    <span class="n">output_grid_size</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+    <span class="c1"># ------ config keys ------</span>
+    <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">num_samples_inf</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">mask_out_of_bounds_samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">contract_coords</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">disparity_at_inf</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">return_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># whether return list or stacked tensor</span>
+    <span class="n">regenerate_code</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">triton_block_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+    <span class="n">triton_num_warps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">checkpointing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># whether or not use pytorch checkpoint for MLP eval</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is the naive implementation of the Lightplane Splatter</span>
+<span class="sd">    (`lightplane_splatter`), which gives the same numeric results as the Triton</span>
+<span class="sd">    implementation with less memory efficiency.</span>
+<span class="sd">    It is useful for debugging and understanding the Triton implementation.</span>
+
+<span class="sd">    Its arguments are the same as the Triton implementation in `lightplane_splatter`.</span>
+<span class="sd">    Additionally, it could work using `torch.torch.utils.checkpoint` by setting</span>
+<span class="sd">    `checkpointing=True`.</span>
+
+<span class="sd">    Please follow the docstring of :func:`lightplane.lightplane_splatter` for</span>
+<span class="sd">    description of arguments and returned variables.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The following method arguments are additional to the arguments of</span>
+<span class="sd">        :func:`lightplane.lightplane_splatter`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        regenerate_code: Ignored, but kept for compatibility with triton api</span>
+<span class="sd">        triton_block_size: Ignored, but kept for compatibility with triton api</span>
+<span class="sd">        triton_num_warps: Ignored, but kept for compatibility with triton api</span>
+<span class="sd">        checkpointing: Whether or not use `torch.utils.checkpoint` for checkpointing.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Union[torch.Tensor, List[torch.Tensor]]: The splatted results.</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        [1] MERF: Memory-Efficient Radiance Fields for Real-time View Synthesis in</span>
+<span class="sd">        Unbounded Scenes, https://arxiv.org/abs/2302.12249</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_lightplane_splatter_naive_impl</span><span class="p">(</span>
+        <span class="n">rays</span><span class="p">,</span>
+        <span class="n">output_grid_size</span><span class="p">,</span>
+        <span class="n">mlp_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">input_grid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># ------ config keys ------</span>
+        <span class="n">num_samples</span><span class="o">=</span><span class="n">num_samples</span><span class="p">,</span>
+        <span class="n">num_samples_inf</span><span class="o">=</span><span class="n">num_samples_inf</span><span class="p">,</span>
+        <span class="n">mask_out_of_bounds_samples</span><span class="o">=</span><span class="n">mask_out_of_bounds_samples</span><span class="p">,</span>
+        <span class="n">contract_coords</span><span class="o">=</span><span class="n">contract_coords</span><span class="p">,</span>
+        <span class="n">disparity_at_inf</span><span class="o">=</span><span class="n">disparity_at_inf</span><span class="p">,</span>
+        <span class="n">return_list</span><span class="o">=</span><span class="n">return_list</span><span class="p">,</span>
+        <span class="n">regenerate_code</span><span class="o">=</span><span class="n">regenerate_code</span><span class="p">,</span>
+        <span class="n">triton_block_size</span><span class="o">=</span><span class="n">triton_block_size</span><span class="p">,</span>
+        <span class="n">triton_num_warps</span><span class="o">=</span><span class="n">triton_num_warps</span><span class="p">,</span>
+        <span class="n">checkpointing</span><span class="o">=</span><span class="n">checkpointing</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="lightplane_mlp_splatter_naive">
+<a class="viewcode-back" href="../../naive_implementation_api.html#lightplane.lightplane_mlp_splatter_naive">[docs]</a>
+<span class="k">def</span> <span class="nf">lightplane_mlp_splatter_naive</span><span class="p">(</span>
+    <span class="n">rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">,</span>
+    <span class="n">output_grid_size</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+    <span class="n">mlp_params</span><span class="p">:</span> <span class="n">SplatterParams</span><span class="p">,</span>
+    <span class="n">input_grid</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="c1"># ------ config keys ------</span>
+    <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">num_samples_inf</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">mask_out_of_bounds_samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">contract_coords</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">disparity_at_inf</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">input_grid_sizes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">return_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">regenerate_code</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">triton_block_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+    <span class="n">triton_num_warps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">checkpointing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># whether or not use pytorch checkpoint for MLP eval</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is the naive implementation of the Lightplane Splatter with MLP and `input_grid`</span>
+<span class="sd">    (`lightplane_mlp_splatter`), which gives the same numeric results as the Triton</span>
+<span class="sd">    implementation with less memory efficiency.</span>
+<span class="sd">    It is useful for debugging and understanding the Triton implementation.</span>
+
+<span class="sd">    Its arguments are the same as the Triton implementation in `lightplane_mlp_splatter`.</span>
+<span class="sd">    Additionally, it could work using `torch.torch.utils.checkpoint` by setting</span>
+<span class="sd">    `checkpointing=True`.</span>
+
+<span class="sd">    Please follow the docstring of :func:`lightplane.lightplane_mlp_splatter` for</span>
+<span class="sd">    description of arguments and returned variables.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The following method arguments are additional to the arguments of</span>
+<span class="sd">        :func:`lightplane.lightplane_mlp_splatter`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        regenerate_code: Ignored, but kept for compatibility with triton api</span>
+<span class="sd">        triton_block_size: Ignored, but kept for compatibility with triton api</span>
+<span class="sd">        triton_num_warps: Ignored, but kept for compatibility with triton api</span>
+<span class="sd">        checkpointing: Whether or not use `torch.utils.checkpoint` for checkpointing.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Union[torch.Tensor, List[torch.Tensor]]: The splatted results.</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        [1] MERF: Memory-Efficient Radiance Fields for Real-time View Synthesis in</span>
+<span class="sd">        Unbounded Scenes, https://arxiv.org/abs/2302.12249</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_grid</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">input_grid_sizes</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">check_grid_and_color_grid</span><span class="p">(</span>
+        <span class="n">input_grid</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">input_grid_sizes</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="p">)</span>
+
+    <span class="c1"># if grid is flatten tensor, we need to unflatten them to 5-dim tensor so that pytorch can interpolate on them.</span>
+    <span class="c1"># unflatten use split operations, which should use no addtional memories as it creats tensor view instead of allocating memories.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_grid</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="n">input_grid_sizes_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+            <span class="n">input_grid_sizes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">input_grid</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span>
+        <span class="p">)</span>
+        <span class="n">input_grid</span> <span class="o">=</span> <span class="n">unflatten_grid</span><span class="p">(</span><span class="n">input_grid</span><span class="p">,</span> <span class="n">input_grid_sizes_tensor</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_lightplane_splatter_naive_impl</span><span class="p">(</span>
+        <span class="n">rays</span><span class="p">,</span>
+        <span class="n">output_grid_size</span><span class="p">,</span>
+        <span class="n">mlp_params</span><span class="o">=</span><span class="n">mlp_params</span><span class="p">,</span>
+        <span class="n">input_grid</span><span class="o">=</span><span class="n">input_grid</span><span class="p">,</span>
+        <span class="c1"># ------ config keys ------</span>
+        <span class="n">num_samples</span><span class="o">=</span><span class="n">num_samples</span><span class="p">,</span>
+        <span class="n">num_samples_inf</span><span class="o">=</span><span class="n">num_samples_inf</span><span class="p">,</span>
+        <span class="n">mask_out_of_bounds_samples</span><span class="o">=</span><span class="n">mask_out_of_bounds_samples</span><span class="p">,</span>
+        <span class="n">contract_coords</span><span class="o">=</span><span class="n">contract_coords</span><span class="p">,</span>
+        <span class="n">disparity_at_inf</span><span class="o">=</span><span class="n">disparity_at_inf</span><span class="p">,</span>
+        <span class="n">input_grid_sizes</span><span class="o">=</span><span class="n">input_grid_sizes</span><span class="p">,</span>
+        <span class="n">return_list</span><span class="o">=</span><span class="n">return_list</span><span class="p">,</span>
+        <span class="n">regenerate_code</span><span class="o">=</span><span class="n">regenerate_code</span><span class="p">,</span>
+        <span class="n">triton_block_size</span><span class="o">=</span><span class="n">triton_block_size</span><span class="p">,</span>
+        <span class="n">triton_num_warps</span><span class="o">=</span><span class="n">triton_num_warps</span><span class="p">,</span>
+        <span class="n">checkpointing</span><span class="o">=</span><span class="n">checkpointing</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_lightplane_splatter_naive_impl</span><span class="p">(</span>
+    <span class="n">rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">,</span>
+    <span class="n">output_grid_size</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+    <span class="n">mlp_params</span><span class="p">:</span> <span class="n">SplatterParams</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">input_grid</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># ------ config keys ------</span>
+    <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+    <span class="n">num_samples_inf</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">mask_out_of_bounds_samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">contract_coords</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">disparity_at_inf</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">input_grid_sizes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">return_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">regenerate_code</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">triton_num_warps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># ignored, but kept for compatibility with triton api</span>
+    <span class="n">triton_block_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># ignored, but kept for compatibility with triton api</span>
+    <span class="n">checkpointing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># whether or not use pytorch checkpoint for MLP eval</span>
+<span class="p">):</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">device</span>
+    <span class="k">if</span> <span class="n">mlp_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">use_mlp</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">n_hidden</span> <span class="o">=</span> <span class="n">mlp_params</span><span class="o">.</span><span class="n">n_hidden</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">use_mlp</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">mlp_params</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">n_hidden</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">num_rays</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">directions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">lsp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">depths</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">near</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">lsp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="p">(</span><span class="n">rays</span><span class="o">.</span><span class="n">far</span> <span class="o">-</span> <span class="n">rays</span><span class="o">.</span><span class="n">near</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">tot_num_samples</span> <span class="o">=</span> <span class="n">num_samples</span> <span class="o">+</span> <span class="n">num_samples_inf</span>
+
+    <span class="n">feature_grid</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">g</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">output_grid_size</span>
+    <span class="p">]</span>
+
+    <span class="n">weight_grid</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">g</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">output_grid_size</span>
+    <span class="p">]</span>
+
+    <span class="n">grid_idx</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">grid_idx</span>
+    <span class="k">if</span> <span class="n">num_samples_inf</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">sph</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">_depth_inv_sphere</span><span class="p">(</span><span class="n">rays</span><span class="o">.</span><span class="n">far</span><span class="p">,</span> <span class="n">disparity_at_inf</span><span class="p">,</span> <span class="n">num_samples_inf</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_samples_inf</span><span class="p">)</span>
+            <span class="p">],</span>
+            <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">depths</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">depths</span><span class="p">,</span> <span class="n">sph</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">depths</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">rays</span><span class="o">.</span><span class="n">directions</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span> <span class="o">+</span> <span class="n">rays</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">if</span> <span class="n">contract_coords</span><span class="p">:</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">_contract_pi</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="n">splatting_feature</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">encoding</span>
+    <span class="n">splatting_feature</span> <span class="o">=</span> <span class="n">splatting_feature</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">tot_num_samples</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">collision_feat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">splatting_feature</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">use_mlp</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="n">_flattened_one_mlp_params_to_list</span><span class="p">(</span>
+            <span class="n">mlp_params</span><span class="o">.</span><span class="n">mlp_params</span><span class="p">,</span>
+            <span class="n">n_hidden</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">feature_sampled</span> <span class="o">=</span> <span class="n">sample_grid_list_checkpointed</span><span class="p">(</span>
+            <span class="n">input_grid</span><span class="p">,</span>
+            <span class="n">samples</span><span class="p">,</span>
+            <span class="n">grid_idx</span><span class="p">,</span>
+            <span class="n">mask_out_of_bounds_samples</span><span class="p">,</span>
+            <span class="n">checkpointing</span><span class="o">=</span><span class="n">checkpointing</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">feature_sampled</span> <span class="o">=</span> <span class="n">feature_sampled</span> <span class="o">+</span> <span class="n">splatting_feature</span>
+        <span class="n">feature_sampled</span> <span class="o">=</span> <span class="n">_eval_mlp</span><span class="p">(</span>
+            <span class="n">feature_sampled</span><span class="p">,</span>
+            <span class="n">weights</span><span class="p">,</span>
+            <span class="n">bias</span><span class="p">,</span>
+            <span class="n">mlp_name</span><span class="o">=</span><span class="s2">&quot;mlp_splatter&quot;</span><span class="p">,</span>
+            <span class="n">checkpointing</span><span class="o">=</span><span class="n">checkpointing</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">feature_sampled</span> <span class="o">=</span> <span class="n">splatting_feature</span>
+
+    <span class="c1"># NOTE: _splat_shape_rep_checkpoint cannot be checkpointed.</span>
+    <span class="n">_splat_shape_rep_checkpoint</span><span class="p">(</span>
+        <span class="n">feature_grid</span><span class="p">,</span>
+        <span class="n">feature_sampled</span><span class="p">,</span>
+        <span class="n">samples</span><span class="p">,</span>
+        <span class="n">grid_idx</span><span class="p">,</span>
+        <span class="n">mask_out_of_bounds_samples</span><span class="p">,</span>
+        <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">_splat_shape_rep_checkpoint</span><span class="p">(</span>
+        <span class="n">weight_grid</span><span class="p">,</span>
+        <span class="n">collision_feat</span><span class="p">,</span>
+        <span class="n">samples</span><span class="p">,</span>
+        <span class="n">grid_idx</span><span class="p">,</span>
+        <span class="n">mask_out_of_bounds_samples</span><span class="p">,</span>
+        <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">feature_grid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">weight_grid</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">feature_grid</span><span class="p">))</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">return_list</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">g</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">grid</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">grid</span>
+
+
+<span class="k">def</span> <span class="nf">_splat_shape_rep_checkpoint</span><span class="p">(</span>
+    <span class="n">grid</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">splatting_feature</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>  <span class="c1"># B x N x C</span>
+    <span class="n">samples</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>  <span class="c1"># B x N x 3,</span>
+    <span class="n">grid_idx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>  <span class="c1"># B</span>
+    <span class="n">mask_out_of_bounds_samples</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">checkpointing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Note: This function will throw problems when checkpointing=True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">checkpointing</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">checkpoint</span><span class="p">(</span>
+            <span class="n">_splat_shape_rep</span><span class="p">,</span>
+            <span class="o">*</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">splatting_feature</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">grid_idx</span><span class="p">,</span> <span class="n">mask_out_of_bounds_samples</span><span class="p">),</span>
+            <span class="n">use_reentrant</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_splat_shape_rep</span><span class="p">(</span>
+            <span class="n">grid</span><span class="p">,</span> <span class="n">splatting_feature</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">grid_idx</span><span class="p">,</span> <span class="n">mask_out_of_bounds_samples</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_splat_shape_rep</span><span class="p">(</span>
+    <span class="n">grid</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">splatting_feature</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>  <span class="c1"># B x N x C</span>
+    <span class="n">samples</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>  <span class="c1"># B x N x 3,</span>
+    <span class="n">grid_idx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>  <span class="c1"># B</span>
+    <span class="n">mask_out_of_bounds_samples</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">used_grids</span> <span class="o">=</span> <span class="n">grid_idx</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">batch_to_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">grid_idx</span> <span class="o">==</span> <span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">used_grids</span><span class="p">]</span>
+    <span class="n">samples_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">samples</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">batch_to_idx</span><span class="p">]</span>
+    <span class="n">splatting_feature_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">splatting_feature</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">batch_to_idx</span><span class="p">]</span>
+    <span class="n">samples_padded</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">rnn</span><span class="o">.</span><span class="n">pad_sequence</span><span class="p">(</span>
+        <span class="n">samples_list</span><span class="p">,</span>
+        <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">feature_padded</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">rnn</span><span class="o">.</span><span class="n">pad_sequence</span><span class="p">(</span>
+        <span class="n">splatting_feature_list</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">feature_reshape</span> <span class="o">=</span> <span class="n">feature_padded</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
+        <span class="n">used_grids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">feature_padded</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">samples_padded_reshape</span> <span class="o">=</span> <span class="n">samples_padded</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">used_grids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">in_bounding_mask</span> <span class="o">=</span> <span class="n">is_in_bounds</span><span class="p">(</span><span class="n">samples_padded_reshape</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">mask_out_of_bounds_samples</span><span class="p">:</span>
+        <span class="n">feature_reshape</span> <span class="o">=</span> <span class="n">feature_reshape</span> <span class="o">*</span> <span class="n">in_bounding_mask</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">in_bounding_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">in_bounding_mask</span><span class="p">)</span>
+
+    <span class="n">in_bounding_mask</span> <span class="o">=</span> <span class="n">in_bounding_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">grid</span><span class="p">):</span>
+        <span class="n">sample_g</span> <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="n">used_grids</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">g</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">5</span>
+        <span class="n">n_non_singular_dim</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">n_non_singular_dim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># 3d voxel grid</span>
+            <span class="n">sample_g</span> <span class="o">=</span> <span class="n">_splat_voxel_grid</span><span class="p">(</span>
+                <span class="n">feature_reshape</span><span class="p">,</span>
+                <span class="n">samples_padded_reshape</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                <span class="n">samples_padded_reshape</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="n">samples_padded_reshape</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="n">sample_g</span><span class="p">,</span>
+                <span class="n">in_bounding_mask</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+                <span class="c1"># mask</span>
+            <span class="p">)</span>
+
+            <span class="n">grid</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="n">used_grids</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_g</span>
+        <span class="k">elif</span> <span class="n">n_non_singular_dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># triplane</span>
+            <span class="n">singular_dim</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">singular_dim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">plane</span> <span class="o">=</span> <span class="s2">&quot;xy&quot;</span>
+            <span class="k">elif</span> <span class="n">singular_dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">plane</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;xz&quot;</span>  <span class="c1"># the difference with the old lightplane which had zx here !!!</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">singular_dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">plane</span> <span class="o">=</span> <span class="s2">&quot;yz&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+            <span class="n">sample_coords</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;xyz&quot;</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">plane</span><span class="p">]</span>
+            <span class="n">sample_g</span> <span class="o">=</span> <span class="n">_splat_grid</span><span class="p">(</span>
+                <span class="n">feature_reshape</span><span class="p">,</span>
+                <span class="n">samples_padded_reshape</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">sample_coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                <span class="n">samples_padded_reshape</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">sample_coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                <span class="n">sample_g</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">singular_dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="n">in_bounding_mask</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+                <span class="c1"># mask</span>
+            <span class="p">)</span>
+            <span class="n">grid</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="n">used_grids</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_g</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">singular_dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;no such 3D&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_splat_3d</span><span class="p">(</span>
+    <span class="n">feature</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">z</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">voxel</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">W</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">H</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">D</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">C</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">B</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">x_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">W</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">y_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">H</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">z_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">D</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">feature</span> <span class="o">=</span> <span class="n">feature</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">W</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">H</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">z</span> <span class="o">&lt;</span> <span class="n">D</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">z</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">batch_size_shift</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">voxel</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">*</span> <span class="n">W</span> <span class="o">*</span> <span class="n">H</span> <span class="o">*</span> <span class="n">D</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">z_</span> <span class="o">*</span> <span class="n">W</span> <span class="o">*</span> <span class="n">H</span> <span class="o">+</span> <span class="n">y_</span> <span class="o">*</span> <span class="n">W</span> <span class="o">+</span> <span class="n">x_</span> <span class="o">+</span> <span class="n">batch_size_shift</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">location</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">feature</span> <span class="o">=</span> <span class="n">feature</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+    <span class="n">voxel</span> <span class="o">=</span> <span class="n">voxel</span><span class="o">.</span><span class="n">scatter_add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">location</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span> <span class="n">feature</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">voxel</span>
+
+
+<span class="k">def</span> <span class="nf">_splat_voxel_grid</span><span class="p">(</span>
+    <span class="n">feature</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">z</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">voxel</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">in_bounding_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function to splat features to planes based on 2D grid splatting.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        - feature: [B, N, C], the input feature map.</span>
+<span class="sd">        - x: [B, N], the x coordinate of the splatting points. It is in the range of [-1, 1].</span>
+<span class="sd">        - y: [B, N], the y coordinate of the splatting points.  It is in the range of [-1, 1].</span>
+<span class="sd">        - z: [B, N], the z coordinate of the splatting points.  It is in the range of [-1, 1].</span>
+<span class="sd">        - plane: [B, D, H, W, C], the output plane.</span>
+<span class="sd">        - mask: [B, N], in boundary mask</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">B</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">voxel</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1"># convert to image coordinate</span>
+    <span class="n">ix</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">W</span> <span class="o">-</span> <span class="mf">0.5</span>
+    <span class="n">iy</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">H</span> <span class="o">-</span> <span class="mf">0.5</span>
+    <span class="n">iz</span> <span class="o">=</span> <span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">D</span> <span class="o">-</span> <span class="mf">0.5</span>
+
+    <span class="n">ix0</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">-</span> <span class="n">ix</span> <span class="o">%</span> <span class="mi">1</span>  <span class="c1"># floor</span>
+    <span class="n">iy0</span> <span class="o">=</span> <span class="n">iy</span> <span class="o">-</span> <span class="n">iy</span> <span class="o">%</span> <span class="mi">1</span>  <span class="c1"># floor</span>
+    <span class="n">iz0</span> <span class="o">=</span> <span class="n">iz</span> <span class="o">-</span> <span class="n">iz</span> <span class="o">%</span> <span class="mi">1</span>  <span class="c1"># floor</span>
+
+    <span class="n">V000x</span> <span class="o">=</span> <span class="n">ix0</span>
+    <span class="n">V000y</span> <span class="o">=</span> <span class="n">iy0</span>
+    <span class="n">V000z</span> <span class="o">=</span> <span class="n">iz0</span>
+
+    <span class="n">V100x</span> <span class="o">=</span> <span class="n">ix0</span>
+    <span class="n">V100y</span> <span class="o">=</span> <span class="n">iy0</span>
+    <span class="n">V100z</span> <span class="o">=</span> <span class="n">iz0</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">V010x</span> <span class="o">=</span> <span class="n">ix0</span>
+    <span class="n">V010y</span> <span class="o">=</span> <span class="n">iy0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">V010z</span> <span class="o">=</span> <span class="n">iz0</span>
+
+    <span class="n">V001x</span> <span class="o">=</span> <span class="n">ix0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">V001y</span> <span class="o">=</span> <span class="n">iy0</span>
+    <span class="n">V001z</span> <span class="o">=</span> <span class="n">iz0</span>
+
+    <span class="n">V101x</span> <span class="o">=</span> <span class="n">ix0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">V101y</span> <span class="o">=</span> <span class="n">iy0</span>
+    <span class="n">V101z</span> <span class="o">=</span> <span class="n">iz0</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">V011x</span> <span class="o">=</span> <span class="n">ix0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">V011y</span> <span class="o">=</span> <span class="n">iy0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">V011z</span> <span class="o">=</span> <span class="n">iz0</span>
+
+    <span class="n">V110x</span> <span class="o">=</span> <span class="n">ix0</span>
+    <span class="n">V110y</span> <span class="o">=</span> <span class="n">iy0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">V110z</span> <span class="o">=</span> <span class="n">iz0</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">V111x</span> <span class="o">=</span> <span class="n">ix0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">V111y</span> <span class="o">=</span> <span class="n">iy0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">V111z</span> <span class="o">=</span> <span class="n">iz0</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">-</span> <span class="n">ix0</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">iy</span> <span class="o">-</span> <span class="n">iy0</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">iz</span> <span class="o">-</span> <span class="n">iz0</span>
+    <span class="n">voxel</span> <span class="o">=</span> <span class="n">voxel</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+    <span class="n">voxel</span> <span class="o">=</span> <span class="n">_splat_3d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">V000x</span><span class="p">,</span>
+        <span class="n">V000y</span><span class="p">,</span>
+        <span class="n">V000z</span><span class="p">,</span>
+        <span class="n">voxel</span><span class="p">,</span>
+        <span class="n">W</span><span class="p">,</span>
+        <span class="n">H</span><span class="p">,</span>
+        <span class="n">D</span><span class="p">,</span>
+        <span class="n">C</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">,</span>
+        <span class="n">in_bounding_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">voxel</span> <span class="o">=</span> <span class="n">_splat_3d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">V100x</span><span class="p">,</span>
+        <span class="n">V100y</span><span class="p">,</span>
+        <span class="n">V100z</span><span class="p">,</span>
+        <span class="n">voxel</span><span class="p">,</span>
+        <span class="n">W</span><span class="p">,</span>
+        <span class="n">H</span><span class="p">,</span>
+        <span class="n">D</span><span class="p">,</span>
+        <span class="n">C</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">,</span>
+        <span class="n">in_bounding_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">voxel</span> <span class="o">=</span> <span class="n">_splat_3d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">V010x</span><span class="p">,</span>
+        <span class="n">V010y</span><span class="p">,</span>
+        <span class="n">V010z</span><span class="p">,</span>
+        <span class="n">voxel</span><span class="p">,</span>
+        <span class="n">W</span><span class="p">,</span>
+        <span class="n">H</span><span class="p">,</span>
+        <span class="n">D</span><span class="p">,</span>
+        <span class="n">C</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">,</span>
+        <span class="n">in_bounding_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">voxel</span> <span class="o">=</span> <span class="n">_splat_3d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">V110x</span><span class="p">,</span>
+        <span class="n">V110y</span><span class="p">,</span>
+        <span class="n">V110z</span><span class="p">,</span>
+        <span class="n">voxel</span><span class="p">,</span>
+        <span class="n">W</span><span class="p">,</span>
+        <span class="n">H</span><span class="p">,</span>
+        <span class="n">D</span><span class="p">,</span>
+        <span class="n">C</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">,</span>
+        <span class="n">in_bounding_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">voxel</span> <span class="o">=</span> <span class="n">_splat_3d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">V001x</span><span class="p">,</span>
+        <span class="n">V001y</span><span class="p">,</span>
+        <span class="n">V001z</span><span class="p">,</span>
+        <span class="n">voxel</span><span class="p">,</span>
+        <span class="n">W</span><span class="p">,</span>
+        <span class="n">H</span><span class="p">,</span>
+        <span class="n">D</span><span class="p">,</span>
+        <span class="n">C</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">,</span>
+        <span class="n">in_bounding_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">voxel</span> <span class="o">=</span> <span class="n">_splat_3d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">V101x</span><span class="p">,</span>
+        <span class="n">V101y</span><span class="p">,</span>
+        <span class="n">V101z</span><span class="p">,</span>
+        <span class="n">voxel</span><span class="p">,</span>
+        <span class="n">W</span><span class="p">,</span>
+        <span class="n">H</span><span class="p">,</span>
+        <span class="n">D</span><span class="p">,</span>
+        <span class="n">C</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">,</span>
+        <span class="n">in_bounding_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">voxel</span> <span class="o">=</span> <span class="n">_splat_3d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">V011x</span><span class="p">,</span>
+        <span class="n">V011y</span><span class="p">,</span>
+        <span class="n">V011z</span><span class="p">,</span>
+        <span class="n">voxel</span><span class="p">,</span>
+        <span class="n">W</span><span class="p">,</span>
+        <span class="n">H</span><span class="p">,</span>
+        <span class="n">D</span><span class="p">,</span>
+        <span class="n">C</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">,</span>
+        <span class="n">in_bounding_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">voxel</span> <span class="o">=</span> <span class="n">_splat_3d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">V111x</span><span class="p">,</span>
+        <span class="n">V111y</span><span class="p">,</span>
+        <span class="n">V111z</span><span class="p">,</span>
+        <span class="n">voxel</span><span class="p">,</span>
+        <span class="n">W</span><span class="p">,</span>
+        <span class="n">H</span><span class="p">,</span>
+        <span class="n">D</span><span class="p">,</span>
+        <span class="n">C</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">,</span>
+        <span class="n">in_bounding_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">voxel</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_splat_2d</span><span class="p">(</span>
+    <span class="n">feature</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">plane</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">W</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">H</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">C</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">B</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">x_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">W</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">y_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">H</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">feature</span> <span class="o">=</span> <span class="n">feature</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">W</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">H</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">batch_size_shift</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">plane</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">*</span> <span class="n">W</span> <span class="o">*</span> <span class="n">H</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">y_</span> <span class="o">*</span> <span class="n">W</span> <span class="o">+</span> <span class="n">x_</span> <span class="o">+</span> <span class="n">batch_size_shift</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">location</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">feature</span> <span class="o">=</span> <span class="n">feature</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">plane</span> <span class="o">=</span> <span class="n">plane</span><span class="o">.</span><span class="n">scatter_add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">location</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span> <span class="n">feature</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">plane</span>
+
+
+<span class="k">def</span> <span class="nf">_splat_grid</span><span class="p">(</span>
+    <span class="n">feature</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">plane</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">in_bounding_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function to splat features to planes based on 2D grid splatting.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        - feature: [B, C, N], the input feature map.</span>
+<span class="sd">        - x: [B, N], the x coordinate of the splatting points. It is in the range of [-1, 1].</span>
+<span class="sd">        - y: [B, N], the y coordinate of the splatting points.  It is in the range of [-1, 1].</span>
+<span class="sd">        - plane: [1, H, W, C], the output plane. Note it is in shape of [B, H, W, C]</span>
+<span class="sd">        - mask: [B, N], in boundary mask</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">plane</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># convert to image coordinate</span>
+    <span class="n">ix</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">W</span> <span class="o">-</span> <span class="mf">0.5</span>
+    <span class="n">iy</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">H</span> <span class="o">-</span> <span class="mf">0.5</span>
+
+    <span class="n">ix_nw</span> <span class="o">=</span> <span class="n">ix</span> <span class="o">-</span> <span class="n">ix</span> <span class="o">%</span> <span class="mi">1</span>  <span class="c1"># floor</span>
+    <span class="n">iy_nw</span> <span class="o">=</span> <span class="n">iy</span> <span class="o">-</span> <span class="n">iy</span> <span class="o">%</span> <span class="mi">1</span>  <span class="c1"># floor</span>
+
+    <span class="n">ix_ne</span> <span class="o">=</span> <span class="n">ix_nw</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">iy_ne</span> <span class="o">=</span> <span class="n">iy_nw</span>
+    <span class="n">ix_sw</span> <span class="o">=</span> <span class="n">ix_nw</span>
+    <span class="n">iy_sw</span> <span class="o">=</span> <span class="n">iy_nw</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">ix_se</span> <span class="o">=</span> <span class="n">ix_nw</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">iy_se</span> <span class="o">=</span> <span class="n">iy_nw</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">nw</span> <span class="o">=</span> <span class="p">(</span><span class="n">ix_se</span> <span class="o">-</span> <span class="n">ix</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">iy_se</span> <span class="o">-</span> <span class="n">iy</span><span class="p">)</span>
+    <span class="n">ne</span> <span class="o">=</span> <span class="p">(</span><span class="n">ix</span> <span class="o">-</span> <span class="n">ix_sw</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">iy_sw</span> <span class="o">-</span> <span class="n">iy</span><span class="p">)</span>
+    <span class="n">sw</span> <span class="o">=</span> <span class="p">(</span><span class="n">ix_ne</span> <span class="o">-</span> <span class="n">ix</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">iy</span> <span class="o">-</span> <span class="n">iy_ne</span><span class="p">)</span>
+    <span class="n">se</span> <span class="o">=</span> <span class="p">(</span><span class="n">ix</span> <span class="o">-</span> <span class="n">ix_nw</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">iy</span> <span class="o">-</span> <span class="n">iy_nw</span><span class="p">)</span>
+    <span class="n">plane</span> <span class="o">=</span> <span class="n">plane</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+    <span class="n">plane</span> <span class="o">=</span> <span class="n">_splat_2d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="n">nw</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">ix_nw</span><span class="p">,</span> <span class="n">iy_nw</span><span class="p">,</span> <span class="n">plane</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">in_bounding_mask</span>
+    <span class="p">)</span>
+    <span class="n">plane</span> <span class="o">=</span> <span class="n">_splat_2d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="n">ne</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">ix_ne</span><span class="p">,</span> <span class="n">iy_ne</span><span class="p">,</span> <span class="n">plane</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">in_bounding_mask</span>
+    <span class="p">)</span>
+    <span class="n">plane</span> <span class="o">=</span> <span class="n">_splat_2d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="n">sw</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">ix_sw</span><span class="p">,</span> <span class="n">iy_sw</span><span class="p">,</span> <span class="n">plane</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">in_bounding_mask</span>
+    <span class="p">)</span>
+    <span class="n">plane</span> <span class="o">=</span> <span class="n">_splat_2d</span><span class="p">(</span>
+        <span class="n">feature</span> <span class="o">*</span> <span class="n">se</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">ix_se</span><span class="p">,</span> <span class="n">iy_se</span><span class="p">,</span> <span class="n">plane</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">in_bounding_mask</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">plane</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Meta AI Research.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

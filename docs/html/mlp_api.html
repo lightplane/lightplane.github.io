@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MLP API &mdash; Lightplane  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Naive Implementation API" href="naive_implementation_api.html" />
+    <link rel="prev" title="Rendering rays API" href="rendering_rays_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Lightplane
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feature_grids.html">3D feature grids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering_rays.html">Rendering rays</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_renderer.html">Lightplane Renderer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_splatter.html">Lightplane Splatter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cog_code_generator.html">COG Code Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Memory &amp; Speed Benchmark</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="lightplane_renderer_api.html">Lightplane Renderer API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_splatter_api.html">Lightplane Splatter API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering_rays_api.html">Rendering rays API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MLP API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.DecoderParams"><code class="docutils literal notranslate"><span class="pre">DecoderParams</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.DecoderParams.mlp_params"><code class="docutils literal notranslate"><span class="pre">DecoderParams.mlp_params</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.DecoderParams.n_hidden_trunk"><code class="docutils literal notranslate"><span class="pre">DecoderParams.n_hidden_trunk</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.DecoderParams.n_hidden_opacity"><code class="docutils literal notranslate"><span class="pre">DecoderParams.n_hidden_opacity</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.DecoderParams.n_hidden_color"><code class="docutils literal notranslate"><span class="pre">DecoderParams.n_hidden_color</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.DecoderParams.color_chn"><code class="docutils literal notranslate"><span class="pre">DecoderParams.color_chn</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.SplatterParams"><code class="docutils literal notranslate"><span class="pre">SplatterParams</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.SplatterParams.mlp_params"><code class="docutils literal notranslate"><span class="pre">SplatterParams.mlp_params</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightplane.SplatterParams.n_hidden"><code class="docutils literal notranslate"><span class="pre">SplatterParams.n_hidden</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.flatten_decoder_params"><code class="docutils literal notranslate"><span class="pre">flatten_decoder_params()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.flatten_splatter_params"><code class="docutils literal notranslate"><span class="pre">flatten_splatter_params()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.flattened_decoder_params_to_list"><code class="docutils literal notranslate"><span class="pre">flattened_decoder_params_to_list()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.flattened_triton_decoder_to_list"><code class="docutils literal notranslate"><span class="pre">flattened_triton_decoder_to_list()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.get_triton_function_input_dims"><code class="docutils literal notranslate"><span class="pre">get_triton_function_input_dims()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.init_decoder_params"><code class="docutils literal notranslate"><span class="pre">init_decoder_params()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lightplane.init_splatter_params"><code class="docutils literal notranslate"><span class="pre">init_splatter_params()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="naive_implementation_api.html">Naive Implementation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation_api.html">Visualization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc_utilities_api.html">Misc Utilities API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Lightplane</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">MLP API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/mlp_api.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="mlp-api">
+<h1>MLP API<a class="headerlink" href="#mlp-api" title="Link to this heading"></a></h1>
+<p>MLP API provides tooling for implementing MLP encoders / decoders used in the Lightplane renderer and splatter.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightplane.DecoderParams">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">DecoderParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mlp_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hidden_trunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hidden_opacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hidden_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightplane/mlp_utils.html#DecoderParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.DecoderParams" title="Link to this definition"></a></dt>
+<dd><p>Class configuring the learnable parameters of the decoder from Lightplane Renderer.</p>
+<p>The decoder comprises a learnable function that predicts color and an opacity value
+given a grid feature sampled at every point along a rendering ray.</p>
+<p>Specifically, the decoder function consists of three MLPs: <cite>trunk_mlp</cite>, <cite>opacity_mlp</cite>,
+and <cite>color_mlp</cite>.
+The three MLPs predict opacity and color as follows:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p><cite>use_separate_color_grid==False</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">-&gt;</span> <span class="n">f_i</span> <span class="o">-&gt;</span> <span class="n">trunk_mlp</span> <span class="o">-&gt;</span> <span class="n">e_i</span> <span class="o">-&gt;</span> <span class="n">e_i</span> <span class="o">+</span> <span class="n">ray_encoding</span> <span class="o">-&gt;</span> <span class="n">color_mlp</span> <span class="o">-&gt;</span> <span class="n">c_i</span>
+                                <span class="o">-&gt;</span> <span class="n">opacity_mlp</span> <span class="o">-&gt;</span> <span class="n">o_i</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>If the renderer uses a single grid for both opacity and color, an MLP
+<cite>trunk_mlp</cite> maps the grid-sampled feature <cite>f_i</cite> to a trunk feature <cite>e_i</cite>,
+which is later converted to opacity and color with a pair of additional
+color and opacity MLP heads <cite>color_mlp</cite> and <cite>opacity_mlp</cite>.
+The trunk feature <cite>e_i</cite> is summed with <cite>ray_encoding</cite> before <cite>color_mlp</cite>
+to make the predicted color viewpoint dependent.</p>
+<ol class="arabic" start="2">
+<li><p><cite>use_separate_color_grid==True</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span>       <span class="o">-&gt;</span> <span class="n">f_i</span>  <span class="o">-&gt;</span> <span class="n">opacity_mlp</span> <span class="o">-&gt;</span> <span class="n">o_i</span>
+<span class="n">color_grid</span> <span class="o">-&gt;</span> <span class="n">cf_i</span> <span class="o">-&gt;</span> <span class="n">cf_i</span> <span class="o">+</span> <span class="n">ray_encoding</span> <span class="o">-&gt;</span> <span class="n">color_mlp</span> <span class="o">-&gt;</span> <span class="n">c_i</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>If the renderer uses a separate color grid (<cite>use_separate_color_grid==True</cite>),
+the trunk MLP will be omitted
+The <cite>opacity_mlp</cite> and <cite>color_mlp</cite> predict the opacity <cite>o_i</cite> and color
+values <cite>c_i</cite>, respectively,
+given an opacity/color features (<cite>f_i</cite> and <cite>cf_i</cite>) sampled from the
+corresponding grid <cite>grid</cite> and <cite>color_grid</cite>.</p>
+</div></blockquote>
+<p>The parameters of the three MLPs are stored in the <cite>mlp_params</cite> attribute.
+Here, <cite>mlp_params</cite> is a 1D tensor which concatenates the flattened weight matrices
+and bias vectors of the three MLPs in the following order:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mlp_params</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">weights_trunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+        <span class="o">...</span>
+        <span class="n">weights_trunk</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+        <span class="n">biases_trunk</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="o">...</span>
+        <span class="n">biases_trunk</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">weights_opacity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+        <span class="o">...</span>
+        <span class="n">weights_opacity</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+        <span class="n">biases_opacity</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="o">...</span>
+        <span class="n">baises_opacity</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">weights_color</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+        <span class="o">...</span>
+        <span class="n">weights_color</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+        <span class="n">biases_color</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="o">...</span>
+        <span class="n">biases_color</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, <cite>weights_XXX[i]</cite> correspond to a <cite>(M, N)</cite> tensor storing the weight matrix
+of the i-th MLP layer. Similarly, <cite>biases_XXX[i]</cite> is a <cite>(N,)</cite> tensor storing
+the bias vector.</p>
+<p>The MLP multiplies the input features from the right, i.e.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">output</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">input</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">@</span> <span class="n">weights_XXX</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">biases_XXX</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Hence, <cite>M</cite> / <cite>N</cite> is the input / output channel dimension.</p>
+<p>In addition to the <cite>mlp_params</cite>, the <cite>DecoderParams</cite> class stores the number
+of hidden units each MLP. Specifically, <cite>n_hidden_trunk</cite>, <cite>n_hidden_opacity</cite>, and
+<cite>n_hidden_color</cite> are tensors of shape <cite>(n_layers+1,)</cite> that store the number of
+input channels followed by the output channel number of each layer in
+the trunk, opacity, and color MLPs, respectively.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>One can convert the 1D <cite>mlp_params</cite> tensor to the more-interpretable
+list of weight matrices and bias tensors using the <cite>flattened_decoder_params_to_list</cite>
+function.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Since the Triton language of Lightplane’s GPU kernel constraints the number
+of rendering channels to at least 16, the <cite>color_chn</cite> attribute is used to store
+the effective number of rendered output channels. If the effective number of
+rendered channels is less than 16, the MLP parameters are padded with zeros
+to match the minimum size.</p>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightplane.DecoderParams.mlp_params">
+<span class="sig-name descname"><span class="pre">mlp_params</span></span><a class="headerlink" href="#lightplane.DecoderParams.mlp_params" title="Link to this definition"></a></dt>
+<dd><p>The parameters for the Lightplane Rendering decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightplane.DecoderParams.n_hidden_trunk">
+<span class="sig-name descname"><span class="pre">n_hidden_trunk</span></span><a class="headerlink" href="#lightplane.DecoderParams.n_hidden_trunk" title="Link to this definition"></a></dt>
+<dd><p><cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+<cite>trunk_mlp</cite>. Note that this tensor can be empty if the trunk MLP is not used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightplane.DecoderParams.n_hidden_opacity">
+<span class="sig-name descname"><span class="pre">n_hidden_opacity</span></span><a class="headerlink" href="#lightplane.DecoderParams.n_hidden_opacity" title="Link to this definition"></a></dt>
+<dd><p><cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+<cite>opacity_mlp</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightplane.DecoderParams.n_hidden_color">
+<span class="sig-name descname"><span class="pre">n_hidden_color</span></span><a class="headerlink" href="#lightplane.DecoderParams.n_hidden_color" title="Link to this definition"></a></dt>
+<dd><p><cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+<cite>color_mlp</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightplane.DecoderParams.color_chn">
+<span class="sig-name descname"><span class="pre">color_chn</span></span><a class="headerlink" href="#lightplane.DecoderParams.color_chn" title="Link to this definition"></a></dt>
+<dd><p>The number of rendered channels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="lightplane.SplatterParams">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">SplatterParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mlp_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hidden</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightplane/mlp_utils.html#SplatterParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.SplatterParams" title="Link to this definition"></a></dt>
+<dd><p>Class representing learnable parameters of the MLP from Lightplane Splatter.</p>
+<p>The splatter comprises a learnable function that predicts a vector splatted
+to the output 3D feature grid. Specifically, the function is defined as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MLP</span><span class="p">(</span><span class="n">feature_grid</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="n">splatting_feature</span><span class="p">[</span><span class="n">u</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">splat_vector</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>where <cite>x</cite> corresponds to the 3D point along the the ray of pixel <cite>u</cite>,
+<cite>feature_grid[x]</cite> is the input shape grid sampled at point <cite>x</cite>, and
+<cite>splatting_feature[u]</cite> is the splatted feature at pixel <cite>u</cite>.
+The splatting MLP outputs <cite>splat_vector[x]</cite> which is pushed back into the
+output grid.</p>
+<p>The parameters of the MLP are stored in the <cite>mlp_params</cite> attribute.
+Here, <cite>mlp_params</cite> is a 1D tensor which concatenates the flattened weight matrices
+and bias vectors of the MLP in the following order:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mlp_params</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+        <span class="o">...</span>
+        <span class="n">weights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+        <span class="n">biases</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="o">...</span>
+        <span class="n">biases</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, <cite>weights[i]</cite> correspond to a <cite>(M, N)</cite> tensor storing the weight matrix
+of the i-th MLP layer. Similarly, <cite>biases[i]</cite> is a <cite>(N,)</cite> tensor storing
+the bias vector.</p>
+<p>The MLP multiplies the input features from the right, i.e.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">output</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">input</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">@</span> <span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">biases</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Hence, <cite>M</cite> / <cite>N</cite> is the input / output channel dimension.</p>
+<p>In addition to the <cite>mlp_params</cite>, the <cite>SplatterParams</cite> class stores the number
+of MLP’s hidden units. Specifically, the <cite>n_hidden</cite> field is a tensor of shape
+<cite>(n_layers+1,)</cite> that stores the number of input channels followed by
+the output channel number of each layer in the MLP.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightplane.SplatterParams.mlp_params">
+<span class="sig-name descname"><span class="pre">mlp_params</span></span><a class="headerlink" href="#lightplane.SplatterParams.mlp_params" title="Link to this definition"></a></dt>
+<dd><p>The parameters for the Lightplane rendering decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightplane.SplatterParams.n_hidden">
+<span class="sig-name descname"><span class="pre">n_hidden</span></span><a class="headerlink" href="#lightplane.SplatterParams.n_hidden" title="Link to this definition"></a></dt>
+<dd><p><cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+splatting MLP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightplane.flatten_decoder_params">
+<span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">flatten_decoder_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights_trunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biases_trunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_opacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biases_opacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biases_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_color_channels_to_min_block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightplane/mlp_utils.html#flatten_decoder_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.flatten_decoder_params" title="Link to this definition"></a></dt>
+<dd><p>The hepler function to flatten the decoder parameters into a single tensor,
+and get the number of hidden units for each layer in each MLP (<cite>n_hidden_XX</cite>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weights_trunk</strong> – Tuple of weight matrices for <cite>trunk_mlp</cite>.</p></li>
+<li><p><strong>biases_trunk</strong> – Tuple of bias vectors for <cite>trunk_mlp</cite>.</p></li>
+<li><p><strong>weights_opacity</strong> – Tuple of weight matrices for <cite>opacity_mlp</cite>.</p></li>
+<li><p><strong>biases_opacity</strong> – Tuple of bias vectors for <cite>opacity_mlp</cite>.</p></li>
+<li><p><strong>weights_color</strong> – Tuple of weight matrices for <cite>color_mlp</cite>.</p></li>
+<li><p><strong>biases_color</strong> – Tuple of bias vectors for <cite>color_mlp</cite>.</p></li>
+<li><p><strong>pad_color_channels_to_min_block_size</strong> – If True, the MLP parameters are padded with zeros
+to match the minimum size of the triton minimum block size.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightplane.flatten_splatter_params">
+<span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">flatten_splatter_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biases</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightplane/mlp_utils.html#flatten_splatter_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.flatten_splatter_params" title="Link to this definition"></a></dt>
+<dd><p>The hepler function to flatten the splatter parameters into a single tensor,
+and get the number of hidden units for each layer in the MLP (<cite>n_hidden</cite>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weights</strong> – Tuple of weight matrices for the MLP.</p></li>
+<li><p><strong>biases</strong> – Tuple of bias vectors for the MLP.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightplane.flattened_decoder_params_to_list">
+<span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">flattened_decoder_params_to_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mlp_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hidden_trunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hidden_opacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hidden_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transpose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightplane/mlp_utils.html#flattened_decoder_params_to_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.flattened_decoder_params_to_list" title="Link to this definition"></a></dt>
+<dd><p>This function converts the flattened MLP parameters into a list of weight matrices,
+and bias vectors for each MLP.
+It is the inverse function of <cite>flatten_decoder_params</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mlp_params</strong> – The flattened MLP parameters, i.e. 1D tensor.</p></li>
+<li><p><strong>n_hidden_trunk</strong> – <cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+<cite>trunk_mlp</cite>. Note that this tensor can be empty if the trunk MLP is not used.</p></li>
+<li><p><strong>n_hidden_opacity</strong> – <cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+<cite>opacity_mlp</cite>.</p></li>
+<li><p><strong>n_hidden_color</strong> – <cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+<cite>color_mlp</cite>.</p></li>
+<li><p><strong>transpose</strong> – If True, the weight matrices are transposed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>weights_trunk</strong> – Weight matrices of the trunk MLP.</p></li>
+<li><p><strong>biases_trunk</strong> – Bias vectors of the trunk MLP.</p></li>
+<li><p><strong>weights_opacity</strong> – Weight matrices of the opacity MLP.</p></li>
+<li><p><strong>biases_opacity</strong> – Bias vectors of the opacity MLP.</p></li>
+<li><p><strong>weights_color</strong> – Weight matrices of the color MLP.</p></li>
+<li><p><strong>biases_color</strong> – Bias vectors of the color MLP.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightplane.flattened_triton_decoder_to_list">
+<span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">flattened_triton_decoder_to_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mlp_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layers_trunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layers_opacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layers_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightplane/mlp_utils.html#flattened_triton_decoder_to_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.flattened_triton_decoder_to_list" title="Link to this definition"></a></dt>
+<dd><p>Another helper function to convert the flattened MLP parameters into a list
+of weight matrices, and bias vectors for each MLP.
+Given <cite>mlp_params</cite>, the number of layers for each MLP, input/output number
+of channesl, and hidden units number, this function returns the list of weight
+matrices and bias vectors for each MLP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mlp_params</strong> – The flattened MLP parameters, i.e. 1D tensor.</p></li>
+<li><p><strong>n_layers_trunk</strong> – The number of layers in the <cite>trunk_mlp</cite>.</p></li>
+<li><p><strong>n_layers_opacity</strong> – The number of layers in the <cite>opacity_mlp</cite>.</p></li>
+<li><p><strong>n_layers_color</strong> – The number of layers in the <cite>color_mlp</cite>.</p></li>
+<li><p><strong>input_chn</strong> – The number of input channels.</p></li>
+<li><p><strong>hidden_chn</strong> – The number of hidden units in the MLP layers.</p></li>
+<li><p><strong>color_chn</strong> – The number of rendered channels.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightplane.get_triton_function_input_dims">
+<span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">get_triton_function_input_dims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_hidden_trunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hidden_opacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_hidden_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightplane/mlp_utils.html#get_triton_function_input_dims"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.get_triton_function_input_dims" title="Link to this definition"></a></dt>
+<dd><p>Function to get the MLP layers and hidden units from <cite>n_hidden_trunk</cite>,
+<cite>n_hidden_opacity</cite> and <cite>n_hidden_color</cite> inside <cite>decoder_params</cite> object.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightplane.init_decoder_params">
+<span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">init_decoder_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layers_opacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layers_trunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layers_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity_init_bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_color_channels_to_min_block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_separate_color_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#lightplane.DecoderParams" title="lightplane.mlp_utils.DecoderParams"><span class="pre">DecoderParams</span></a></span></span><a class="reference internal" href="_modules/lightplane/mlp_utils.html#init_decoder_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.init_decoder_params" title="Link to this definition"></a></dt>
+<dd><p>The function initializes the learnable parameters of the Lightplane Renderer
+decoder given mlp configurations.
+Weights and biases of three MLPs inside decoder (<cite>trunk_mlp</cite>, <cite>opacity_mlp</cite>,
+and <cite>color_mlp</cite>) are initialized using Xavier initialization by function <cite>_xavier_init_mlp_params</cite>,
+and are flattened into a single tensor <cite>mlp_params</cite> by function <cite>flatten_decoder_params</cite>.</p>
+<p>Since the Triton language of Lightplane’s GPU kernel constraints the number
+of rendering channels to at least 16, the <cite>color_chn</cite> attribute is used to store
+the effective number of rendered output channels. If the effective number of
+rendered channels is less than 16, the MLP parameters are padded with zeros
+to match the minimum size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device</strong> – The device to store the parameters.</p></li>
+<li><p><strong>n_hidden_trunk</strong> – <cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+<cite>trunk_mlp</cite>. Note that this tensor can be empty if the trunk MLP is not used.</p></li>
+<li><p><strong>n_hidden_opacity</strong> – <cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+<cite>opacity_mlp</cite>.</p></li>
+<li><p><strong>n_hidden_color</strong> – <cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+<cite>color_mlp</cite>.</p></li>
+<li><p><strong>input_chn</strong> – The number of input channels, which is the number of channel for
+<cite>feature_grid</cite>.</p></li>
+<li><p><strong>hidden_chn</strong> – The number of hidden units in the MLP layers.</p></li>
+<li><p><strong>color_chn</strong> – The number of rendered channels.</p></li>
+<li><p><strong>opacity_init_bias</strong> – The initial bias value for the opacity MLP.</p></li>
+<li><p><strong>pad_color_channels_to_min_block_size</strong> – If True, the MLP parameters are padded with zeros
+to match the minimum size of the triton minimum block size.</p></li>
+<li><p><strong>use_separate_color_grid</strong> – If True, the renderer uses a separate color grid.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightplane.init_splatter_params">
+<span class="sig-prename descclassname"><span class="pre">lightplane.</span></span><span class="sig-name descname"><span class="pre">init_splatter_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_chn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#lightplane.SplatterParams" title="lightplane.mlp_utils.SplatterParams"><span class="pre">SplatterParams</span></a></span></span><a class="reference internal" href="_modules/lightplane/mlp_utils.html#init_splatter_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightplane.init_splatter_params" title="Link to this definition"></a></dt>
+<dd><p>The function initializes the learnable parameters of the Lightplane Splatter
+given mlp configurations.
+Weights and biases of the MLP inside LightPlane Splatter are initialized using
+Xavier initialization by function <cite>_xavier_init_mlp_params</cite>,
+and are flattened into a single tensor <cite>mlp_params</cite> by function <cite>flatten_splatter_params</cite>.</p>
+<p>Since the outout of the mlp is a vector splatted to the output 3D feature grid,
+whose number of channels is the same as the <cite>output_grid</cite>, which is typically more
+than 16.
+So we do not need to pad the MLP parameters to match the minimum size of the triton
+minimum block size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device</strong> – The device to store the parameters.</p></li>
+<li><p><strong>n_layers</strong> – <cite>(n_layers+1,)</cite> Long tensor storing the number of
+input channels followed by the number of hidden units in each layer of the
+mlp.</p></li>
+<li><p><strong>input_chn</strong> – The number of input channels.</p></li>
+<li><p><strong>hidden_chn</strong> – The number of hidden units in the MLP layers.</p></li>
+<li><p><strong>out_chn</strong> – The number of output channels.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="rendering_rays_api.html" class="btn btn-neutral float-left" title="Rendering rays API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="naive_implementation_api.html" class="btn btn-neutral float-right" title="Naive Implementation API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Meta AI Research.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

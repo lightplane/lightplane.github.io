@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lightplane.visualize &mdash; Lightplane  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Lightplane
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../feature_grids.html">3D feature grids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rendering_rays.html">Rendering rays</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer.html">Lightplane Renderer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_splatter.html">Lightplane Splatter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cog_code_generator.html">COG Code Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark.html">Memory &amp; Speed Benchmark</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer_api.html">Lightplane Renderer API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_splatter_api.html">Lightplane Splatter API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rendering_rays_api.html">Rendering rays API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mlp_api.html">MLP API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../naive_implementation_api.html">Naive Implementation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../visualisation_api.html">Visualization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../misc_utilities_api.html">Misc Utilities API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Lightplane</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lightplane.visualize</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lightplane.visualize</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Meta Platforms, Inc. and affiliates.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># This source code is licensed under the BSD-style license found in the</span>
+<span class="c1"># LICENSE file in the root directory of this source tree.</span>
+
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">.ray_utils</span> <span class="kn">import</span> <span class="n">Rays</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">plotly.subplots</span> <span class="kn">import</span> <span class="n">make_subplots</span>
+    <span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+        <span class="s2">&quot;The `plotly` package is required for visualisation functions.&quot;</span>
+        <span class="s2">&quot; Execute `pip install plotly` to install it.&quot;</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="visualize_rays_plotly">
+<a class="viewcode-back" href="../../visualisation_api.html#lightplane.visualize_rays_plotly">[docs]</a>
+<span class="k">def</span> <span class="nf">visualize_rays_plotly</span><span class="p">(</span>
+    <span class="n">rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_display_rays_per_grid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">ncols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ray_line_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">ray_point_marker_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">ray_pixel_colors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Visualizes rays using plotly. The rays are visualized in a grid of subplots,</span>
+<span class="sd">    where each subplot corresponds to a feature grid. The rays are visualized as</span>
+<span class="sd">    lines and points, with the points (optionally) colored according to the</span>
+<span class="sd">    provided pixel colors. The near and far points of the rays are also visualized</span>
+<span class="sd">    as points. The resulting plotly figure can be saved as an html file using</span>
+<span class="sd">    the `output_path` argument. The plotly figure can then be interactively explored</span>
+<span class="sd">    in a web browser.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rays: A `Rays` dataclass to visualize.</span>
+<span class="sd">        output_path: Optional path to save the plotly figure as an html file.</span>
+<span class="sd">        max_display_rays_per_grid: Maximum number of rays to display per feature grid.</span>
+<span class="sd">        ncols: Number of columns in the plot grid.</span>
+<span class="sd">        ray_line_width: Width of the plotted ray lines.</span>
+<span class="sd">        ray_point_marker_size: Size of the plotted ray points.</span>
+<span class="sd">        ray_pixel_colors: Optional tensor of shape `(N, 3)` containing RGB pixel colors.</span>
+<span class="sd">            If provided, the ray points near the origin will be colored with these</span>
+<span class="sd">            pixel colors. The pixel colors should be in the range `[0, 1]`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        fig: The plotly figure.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">num_grids</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">grid_idx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">ncols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ncols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_grids</span><span class="p">)))</span>
+    <span class="n">fig_rows</span> <span class="o">=</span> <span class="n">num_grids</span> <span class="o">//</span> <span class="n">ncols</span>
+    <span class="k">if</span> <span class="n">num_grids</span> <span class="o">%</span> <span class="n">ncols</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">fig_rows</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c1"># allow for non-uniform rows</span>
+    <span class="n">fig_cols</span> <span class="o">=</span> <span class="n">ncols</span>
+    <span class="n">fig_type</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;scene&quot;</span><span class="p">}]</span>
+    <span class="n">specs</span> <span class="o">=</span> <span class="p">[</span><span class="n">fig_type</span> <span class="o">*</span> <span class="n">fig_cols</span><span class="p">]</span> <span class="o">*</span> <span class="n">fig_rows</span>
+    <span class="n">subplot_titles</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;scene_</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_grids</span><span class="p">)]</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">make_subplots</span><span class="p">(</span>
+        <span class="n">rows</span><span class="o">=</span><span class="n">fig_rows</span><span class="p">,</span>
+        <span class="n">cols</span><span class="o">=</span><span class="n">fig_cols</span><span class="p">,</span>
+        <span class="n">specs</span><span class="o">=</span><span class="n">specs</span><span class="p">,</span>
+        <span class="n">subplot_titles</span><span class="o">=</span><span class="n">subplot_titles</span><span class="p">,</span>
+        <span class="n">column_widths</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">fig_cols</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">grid_idx</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">subplot_titles</span><span class="p">):</span>
+        <span class="n">rays_grid</span> <span class="o">=</span> <span class="n">rays</span><span class="p">[</span><span class="n">rays</span><span class="o">.</span><span class="n">grid_idx</span> <span class="o">==</span> <span class="n">grid_idx</span><span class="p">]</span>
+        <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">grid_idx</span> <span class="o">//</span> <span class="n">ncols</span><span class="p">,</span> <span class="n">grid_idx</span> <span class="o">%</span> <span class="n">ncols</span>
+        <span class="k">if</span> <span class="n">max_display_rays_per_grid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">rays_grid</span> <span class="o">=</span> <span class="n">rays_grid</span><span class="p">[:</span><span class="n">max_display_rays_per_grid</span><span class="p">]</span>
+        <span class="n">_add_rays_trace</span><span class="p">(</span>
+            <span class="n">fig</span><span class="p">,</span>
+            <span class="n">rays_grid</span><span class="p">,</span>
+            <span class="n">grid_idx</span><span class="p">,</span>
+            <span class="n">row</span><span class="p">,</span>
+            <span class="n">col</span><span class="p">,</span>
+            <span class="n">title</span><span class="p">,</span>
+            <span class="n">ray_line_width</span><span class="p">,</span>
+            <span class="n">ray_point_marker_size</span><span class="p">,</span>
+            <span class="n">ray_pixel_colors</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">output_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">write_html</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_add_rays_trace</span><span class="p">(</span>
+    <span class="n">fig</span><span class="p">,</span>
+    <span class="n">rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">,</span>
+    <span class="n">subplot_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">col</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">trace_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">line_width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">marker_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">ray_pixel_colors</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add a trace to the plot for visualizing rays.</span>
+
+<span class="sd">    Note: This function is strongly inspired by PyTorch3D&#39;s `plot_scene` function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fig : The figure object to add the trace to.</span>
+<span class="sd">        rays: The rays to visualize.</span>
+<span class="sd">        subplot_idx: The index of the subplot to add the trace to.</span>
+<span class="sd">        row: The row index of the subplot.</span>
+<span class="sd">        col: The column index of the subplot.</span>
+<span class="sd">        trace_name: The name of the trace.</span>
+<span class="sd">        line_width: The width of the ray lines.</span>
+<span class="sd">        marker_size: The size of the ray points.</span>
+<span class="sd">        ray_pixel_colors: The pixel colors associated with the rays.</span>
+<span class="sd">            If provided, the ray points will be colored accordingly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># ndc box lines</span>
+    <span class="n">one_line_cube</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="n">one_line_cube_ndc</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mi">2</span>
+        <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+            <span class="n">one_line_cube</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">rays</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="o">-</span> <span class="mi">1</span>
+    <span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>
+        <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">one_line_cube_ndc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">one_line_cube_ndc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">z</span><span class="o">=</span><span class="n">one_line_cube_ndc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">marker</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span>
+            <span class="n">line</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="n">line_width</span><span class="p">},</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">trace_name</span> <span class="o">+</span> <span class="s2">&quot;_volume_bounds&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">row</span><span class="o">=</span><span class="n">row</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">col</span><span class="o">=</span><span class="n">col</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># ray line endpoints</span>
+    <span class="n">ray_lines_endpoints</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">rays</span><span class="o">.</span><span class="n">origins</span> <span class="o">+</span> <span class="n">rays</span><span class="o">.</span><span class="n">directions</span> <span class="o">*</span> <span class="n">x</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">rays</span><span class="o">.</span><span class="n">near</span><span class="p">,</span> <span class="n">rays</span><span class="o">.</span><span class="n">far</span><span class="p">]],</span>
+        <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># make the ray lines for plotly plotting</span>
+    <span class="n">nan_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+        <span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;NaN&quot;</span><span class="p">)]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">ray_lines_endpoints</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">ray_lines_endpoints</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">ray_lines</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">ray_lines_endpoints</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ray_line</span> <span class="ow">in</span> <span class="n">ray_lines_endpoints</span><span class="p">:</span>
+        <span class="c1"># We combine the ray lines into a single tensor to plot them in a</span>
+        <span class="c1"># single trace. The NaNs are inserted between sets of ray lines</span>
+        <span class="c1"># so that the lines drawn by Plotly are not drawn between</span>
+        <span class="c1"># lines that belong to different rays.</span>
+        <span class="n">ray_lines</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">ray_lines</span><span class="p">,</span> <span class="n">nan_tensor</span><span class="p">,</span> <span class="n">ray_line</span><span class="p">))</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">ray_lines</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>
+        <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+            <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span>
+            <span class="n">line</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="n">line_width</span><span class="p">},</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">trace_name</span> <span class="o">+</span> <span class="s2">&quot;_rays&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">row</span><span class="o">=</span><span class="n">row</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">col</span><span class="o">=</span><span class="n">col</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># plot the ray points</span>
+    <span class="k">for</span> <span class="n">is_far</span> <span class="ow">in</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">]:</span>
+        <span class="n">near_or_far</span> <span class="o">=</span> <span class="n">ray_lines_endpoints</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">is_far</span><span class="p">)]</span>
+        <span class="n">ray_points</span> <span class="o">=</span> <span class="n">near_or_far</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="n">marker_settings</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="n">marker_size</span><span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_far</span> <span class="ow">and</span> <span class="n">ray_pixel_colors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">ray_pixel_colors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">ray_points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">ray_pixel_colors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
+            <span class="n">rgb</span> <span class="o">=</span> <span class="p">(</span><span class="n">ray_pixel_colors</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">int</span><span class="p">()</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="s2">&quot;rgb(</span><span class="si">%d</span><span class="s2">, </span><span class="si">%d</span><span class="s2">, </span><span class="si">%d</span><span class="s2">)&quot;</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="n">template</span> <span class="o">%</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">rgb</span><span class="p">]</span>
+            <span class="n">marker_settings</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>
+            <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">ray_points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">ray_points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="n">z</span><span class="o">=</span><span class="n">ray_points</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">trace_name</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_points_</span><span class="si">{</span><span class="s1">&#39;far&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">is_far</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;near&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="n">marker_settings</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">row</span><span class="o">=</span><span class="n">row</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">col</span><span class="o">=</span><span class="n">col</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Access the current subplot&#39;s scene configuration</span>
+    <span class="n">plot_scene</span> <span class="o">=</span> <span class="s2">&quot;scene&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">subplot_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">current_layout</span> <span class="o">=</span> <span class="n">fig</span><span class="p">[</span><span class="s2">&quot;layout&quot;</span><span class="p">][</span><span class="n">plot_scene</span><span class="p">]</span>
+
+    <span class="c1"># update the bounds of the axes for the current trace</span>
+    <span class="n">all_ray_points</span> <span class="o">=</span> <span class="n">ray_lines_endpoints</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">ray_points_center</span> <span class="o">=</span> <span class="n">all_ray_points</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">max_expand</span> <span class="o">=</span> <span class="p">(</span><span class="n">all_ray_points</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">all_ray_points</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="n">_update_axes_bounds</span><span class="p">(</span><span class="n">ray_points_center</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_expand</span><span class="p">),</span> <span class="n">current_layout</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_update_axes_bounds</span><span class="p">(</span>
+    <span class="n">verts_center</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">max_expand</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">current_layout</span><span class="p">:</span> <span class="s2">&quot;Scene&quot;</span><span class="p">,</span>  <span class="c1"># pyre-ignore[11]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes in the vertices&#39; center point and max spread, and the current plotly figure</span>
+<span class="sd">    layout and updates the layout to have bounds that include all traces for that subplot.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        verts_center: tensor of size (3) corresponding to a trace&#39;s vertices&#39; center point.</span>
+<span class="sd">        max_expand: the maximum spread in any dimension of the trace&#39;s vertices.</span>
+<span class="sd">        current_layout: the plotly figure layout scene corresponding to the referenced trace.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">verts_center</span> <span class="o">=</span> <span class="n">verts_center</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="n">verts_min</span> <span class="o">=</span> <span class="n">verts_center</span> <span class="o">-</span> <span class="n">max_expand</span>
+    <span class="n">verts_max</span> <span class="o">=</span> <span class="n">verts_center</span> <span class="o">+</span> <span class="n">max_expand</span>
+    <span class="n">bounds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">verts_min</span><span class="p">,</span> <span class="n">verts_max</span><span class="p">)))</span>
+
+    <span class="c1"># Ensure that within a subplot, the bounds capture all traces</span>
+    <span class="n">old_xrange</span><span class="p">,</span> <span class="n">old_yrange</span><span class="p">,</span> <span class="n">old_zrange</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">current_layout</span><span class="p">[</span><span class="s2">&quot;xaxis&quot;</span><span class="p">][</span><span class="s2">&quot;range&quot;</span><span class="p">],</span>
+        <span class="n">current_layout</span><span class="p">[</span><span class="s2">&quot;yaxis&quot;</span><span class="p">][</span><span class="s2">&quot;range&quot;</span><span class="p">],</span>
+        <span class="n">current_layout</span><span class="p">[</span><span class="s2">&quot;zaxis&quot;</span><span class="p">][</span><span class="s2">&quot;range&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">x_range</span><span class="p">,</span> <span class="n">y_range</span><span class="p">,</span> <span class="n">z_range</span> <span class="o">=</span> <span class="n">bounds</span>
+    <span class="k">if</span> <span class="n">old_xrange</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">x_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">x_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">old_xrange</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">x_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">x_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">old_xrange</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">old_yrange</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">y_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">y_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">old_yrange</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">y_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">y_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">old_yrange</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">old_zrange</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">z_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">z_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">old_zrange</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">z_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">z_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">old_zrange</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">xaxis</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="n">x_range</span><span class="p">}</span>
+    <span class="n">yaxis</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="n">y_range</span><span class="p">}</span>
+    <span class="n">zaxis</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="n">z_range</span><span class="p">}</span>
+    <span class="n">current_layout</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;xaxis&quot;</span><span class="p">:</span> <span class="n">xaxis</span><span class="p">,</span> <span class="s2">&quot;yaxis&quot;</span><span class="p">:</span> <span class="n">yaxis</span><span class="p">,</span> <span class="s2">&quot;zaxis&quot;</span><span class="p">:</span> <span class="n">zaxis</span><span class="p">})</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Meta AI Research.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

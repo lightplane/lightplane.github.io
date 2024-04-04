@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction &mdash; Lightplane  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="3D feature grids" href="feature_grids.html" />
+    <link rel="prev" title="Lightplane" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Lightplane
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#todo">TODO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#citation">Citation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="feature_grids.html">3D feature grids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering_rays.html">Rendering rays</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_renderer.html">Lightplane Renderer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_splatter.html">Lightplane Splatter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cog_code_generator.html">COG Code Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Memory &amp; Speed Benchmark</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_renderer_api.html">Lightplane Renderer API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_splatter_api.html">Lightplane Splatter API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering_rays_api.html">Rendering rays API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mlp_api.html">MLP API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naive_implementation_api.html">Naive Implementation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation_api.html">Visualization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc_utilities_api.html">Misc Utilities API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Lightplane</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Introduction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/introduction.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h1>
+<p>Lightplane implements a highly memory-efficient differentiable radiance field renderer, and a module for unprojecting features from images to 3D grids, described in our technical report: <em>[Lightplane: Highly-Scalable Components for Neural 3D Fields]</em>(TODO).</p>
+<p><strong>Lightplane can differentiably render batches of FullHD images</strong> while consuming <strong>less than a GigaByte</strong> of GPU memory.
+Rendering / backpropagation speed is comparable to existing methods, which however exceed memory limits already for a single QVGA image (640x480).
+As such, Lightplane’s memory and compute efficiency allows to drastically scale-up the latest neural field methods.</p>
+<img src="_static/assets/lightplane_splash.png" width="800">
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
+<p>Please visit the <a class="reference internal" href="#TODO"><span class="xref myst">documentation website</span></a> for a detailed project and API description.</p>
+</section>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>Lightplane is a pair of highly-scalable components for rendering neural 3D fields.
+It consists of two components: <strong>Lightplane Renderer</strong> and <strong>Lightplane Splatter</strong>.</p>
+<ul class="simple">
+<li><p><strong>Lightplane Renderer</strong> (3D –&gt; 2D) is a radiance field renderer which, given a camera viewpoint and a scene grid structure (triplane, voxel grid, etc.), renders the corresponding image.</p></li>
+<li><p><strong>Lightplane Splatter</strong> (2D –&gt; 3D) is dual to Renderer: it takes image features and lifts/unprojects them to a 3D grid structure.</p></li>
+</ul>
+<p>These two components are implemented as a pair of fused auto-optimized <a class="reference external" href="https://github.com/openai/triton">Triton</a> GPU kernels.</p>
+<p>Key features include:</p>
+<ul class="simple">
+<li><p><strong>Memory Efficiency</strong>: Lightplane dramatically saves memory usage with competing speed compared to existing methods. When rendering a 256x256 image for backpropgation, it uses 10 MB GPU memory while Pytorch implementation uses 10 GB.</p></li>
+<li><p><strong>Highly Scalable</strong>: The memory efficiency of Lightplane significantly boosts the scalability of 3D reconstruction/generation models.
+It allows lifting/unprojecting of hundred views, rendering high-resolution multiview images, with little memory usage.</p></li>
+<li><p><strong>Easy to Extend</strong>: Lightplane is a general design for 3D grid structures. Besides voxel grids and TriPlanes, it can be easily extended to other 3D grids (e.g. hash grid, HexPlane …). More support is coming.</p></li>
+<li><p><strong>Easy to Use</strong>: Lightplane is powerful, configurable and easy to use.</p></li>
+</ul>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://pytorch.org/get-started/locally/#start-locally">Install PyTorch</a>.</p></li>
+<li><p>Install <a class="reference external" href="https://pypi.org/project/cogapp/">COG</a>, <a class="reference external" href="https://github.com/openai/triton">Triton</a> and <a class="reference external" href="https://plotly.com/python/">plotly</a>:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>cogapp
+pip<span class="w"> </span>install<span class="w"> </span>triton
+pip<span class="w"> </span>install<span class="w"> </span>plotly
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Install the LightPlane package:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>(Optional for running example code and jupyter notebooks)</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://github.com/facebookresearch/pytorch3d/blob/main/INSTALL.md">Install PyTorch3D</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">notebook</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">imageio</span> <span class="pre">opencv-python</span> <span class="pre">lpips</span> <span class="pre">matplotlib</span></code></p></li>
+</ol>
+</li>
+</ol>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
+<p>Lightplane Renderer and Splatter are packaged into <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>, which are easy to use as plugins in neural 3D field pipelines.</p>
+<p><strong>Using Lightplane Renderer</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">lightplane</span> <span class="kn">import</span> <span class="n">LightplaneRenderer</span><span class="p">,</span> <span class="n">LightplaneSplatter</span><span class="p">,</span> <span class="n">Rays</span>
+
+<span class="c1"># Setup the gpu device the rendering module.</span>
+<span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">)</span>
+<span class="n">renderer</span> <span class="o">=</span> <span class="n">LightplaneRenderer</span><span class="p">(</span>
+    <span class="n">num_samples</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+    <span class="n">color_chn</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">grid_chn</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">mlp_hidden_chn</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">mlp_n_layers_opacity</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">mlp_n_layers_trunk</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">mlp_n_layers_color</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">ray_embedding_num_harmonics</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Create 128 random rendering rays:</span>
+<span class="n">num_rays</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">rays</span> <span class="o">=</span> <span class="n">Rays</span><span class="p">(</span>
+    <span class="n">directions</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">num_rays</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">origins</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">num_rays</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+    <span class="n">grid_idx</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_rays</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+    <span class="n">near</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">num_rays</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+    <span class="n">far</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">num_rays</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># Create a random triplane.</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">channels</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">H</span> <span class="o">=</span> <span class="n">W</span> <span class="o">=</span> <span class="n">D</span> <span class="o">=</span> <span class="mi">64</span>  <span class="c1"># triplane spatial size</span>
+<span class="n">feature_grid</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="c1"># Render the triplane.</span>
+<span class="p">(</span>
+    <span class="n">rendered_ray_length</span><span class="p">,</span>
+    <span class="n">negative_log_transmittances</span><span class="p">,</span>
+    <span class="n">rendered_features</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">=</span> <span class="n">renderer</span><span class="p">(</span><span class="n">rays</span><span class="o">=</span><span class="n">rays</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">feature_grid</span><span class="o">=</span><span class="n">input_grid</span><span class="p">)</span>
+
+<span class="c1"># get the rendering alpha mask in range [0, 1] from negative log transmittances</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">negative_log_transmittances</span><span class="p">)</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Using Lightplane Splatter</strong>:</p>
+<p>The following splats features to a voxel grid using <code class="docutils literal notranslate"><span class="pre">Rays</span></code> from the previous snippet:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize the splatter module</span>
+<span class="n">splatter</span> <span class="o">=</span> <span class="n">LightplaneSplatter</span><span class="p">(</span>
+    <span class="n">num_samples</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">grid_chn</span><span class="o">=</span><span class="n">channels</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Assign the per-ray image features to splat to the `encoding` field of `rays`.</span>
+<span class="n">rays</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">num_rays</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Set the size of the output voxel grid which we splat features to:</span>
+<span class="n">grid_size</span> <span class="o">=</span> <span class="p">[(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">channels</span><span class="p">)]</span>
+
+<span class="c1"># Run Splatter.</span>
+<span class="n">splatted_grid</span> <span class="o">=</span> <span class="n">splatter</span><span class="p">(</span>
+    <span class="n">rays</span><span class="o">=</span><span class="n">rays</span><span class="p">,</span>
+    <span class="n">grid_size</span><span class="o">=</span><span class="n">grid_size</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<p>Please visit <a class="reference external" href="https://github.com/facebookresearch/lightplane/examples">examples</a> for more detailed example python scripts and jupyter notebooks.</p>
+</section>
+<section id="todo">
+<h2>TODO<a class="headerlink" href="#todo" title="Link to this heading"></a></h2>
+<p>We plan to implement two major new functionalities:</p>
+<ol class="arabic simple">
+<li><p>Support for hash-grids</p></li>
+<li><p>Support for temporal grids, e.g. HexPlane</p></li>
+</ol>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p>Lightplane is released under the <a class="reference external" href="https://github.com/facebookresearch/lightplane/LICENSE">Apache 2.0 License</a>.</p>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@article</span><span class="p">{</span><span class="n">cao2024lightplane</span><span class="p">,</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="p">{</span><span class="n">Ang</span> <span class="n">Cao</span> <span class="ow">and</span> <span class="n">Justin</span> <span class="n">Johnson</span> <span class="ow">and</span> <span class="n">Andrea</span> <span class="n">Vedaldi</span> <span class="ow">and</span> <span class="n">David</span> <span class="n">Novotny</span><span class="p">},</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="p">{</span><span class="n">Lightplane</span><span class="p">:</span> <span class="n">Highly</span><span class="o">-</span><span class="n">Scalable</span> <span class="n">Components</span> <span class="k">for</span> <span class="n">Neural</span> <span class="mi">3</span><span class="n">D</span> <span class="n">Fields</span><span class="p">},</span>
+    <span class="n">journal</span> <span class="o">=</span> <span class="p">{</span><span class="n">arXiv</span><span class="p">},</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="p">{</span><span class="mi">2024</span><span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Lightplane" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="feature_grids.html" class="btn btn-neutral float-right" title="3D feature grids" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Meta AI Research.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lightplane Renderer &mdash; Lightplane  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Lightplane Splatter" href="lightplane_splatter.html" />
+    <link rel="prev" title="Rendering rays" href="rendering_rays.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Lightplane
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feature_grids.html">3D feature grids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering_rays.html">Rendering rays</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Lightplane Renderer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#renderer-module-api">Renderer module API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ea-rendering-with-mlp-decoding">EA rendering with MLP decoding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#renderer-configuration">Renderer configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scaffolded-rendering">Scaffolded rendering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#opacity-noise-injection">Opacity noise injection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modeling-background">Modeling background</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#disparity-space-background-ray-point-sampling">Disparity-space background ray-point sampling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#coordinate-contraction">Coordinate contraction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_splatter.html">Lightplane Splatter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cog_code_generator.html">COG Code Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Memory &amp; Speed Benchmark</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_renderer_api.html">Lightplane Renderer API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lightplane_splatter_api.html">Lightplane Splatter API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering_rays_api.html">Rendering rays API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mlp_api.html">MLP API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naive_implementation_api.html">Naive Implementation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualisation_api.html">Visualization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc_utilities_api.html">Misc Utilities API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Lightplane</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Lightplane Renderer</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/lightplane_renderer.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="lightplane-renderer">
+<h1>Lightplane Renderer<a class="headerlink" href="#lightplane-renderer" title="Link to this heading"></a></h1>
+<section id="renderer-module-api">
+<h2>Renderer module API<a class="headerlink" href="#renderer-module-api" title="Link to this heading"></a></h2>
+<p>The Lightplane Renderer operator is implemented via following interfaces:</p>
+<ul class="simple">
+<li><p>PyTorch module: <a class="reference internal" href="lightplane_renderer_api.html#lightplane.LightplaneRenderer" title="lightplane.LightplaneRenderer"><span class="xref myst py py-class"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer</span></code></span></a></p></li>
+<li><p>Functional interface: <a class="reference internal" href="lightplane_renderer_api.html#lightplane.lightplane_renderer" title="lightplane.lightplane_renderer"><span class="xref myst py py-func"><code class="docutils literal notranslate"><span class="pre">lightplane_renderer</span></code></span></a></p></li>
+</ul>
+<p>Visit <a class="reference internal" href="lightplane_renderer_api.html"><span class="std std-doc">Lightplane Renderer API reference</span></a> for detailed documentation.</p>
+</section>
+<section id="ea-rendering-with-mlp-decoding">
+<h2>EA rendering with MLP decoding<a class="headerlink" href="#ea-rendering-with-mlp-decoding" title="Link to this heading"></a></h2>
+<p>Lightplane Renderer implements the Emission-Absorption (EA) method which marches along rendering rays in order to image a <a class="reference internal" href="feature_grids.html"><span class="std std-doc">3D feature grid</span></a> (represented with a grid-list <code class="docutils literal notranslate"><span class="pre">grid</span></code>).
+It outputs the final color <code class="docutils literal notranslate"><span class="pre">c</span></code>, alpha value <code class="docutils literal notranslate"><span class="pre">m</span></code> and expected ray-termination length <code class="docutils literal notranslate"><span class="pre">r</span></code> of each ray’s pixel, as follows:</p>
+<ol class="arabic">
+<li><p>Sample <code class="docutils literal notranslate"><span class="pre">N=num_samples</span></code> equispaced 3D points <code class="docutils literal notranslate"><span class="pre">pt_3d_i</span></code> between the <code class="docutils literal notranslate"><span class="pre">near</span></code> and <code class="docutils literal notranslate"><span class="pre">far</span></code> ray-lengths:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pt_3d_1</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">pt_3d_N</span> <span class="o">=</span> <span class="n">origin</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="n">direction</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="n">near</span><span class="p">,</span> <span class="n">far</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Using Lightplane’s MLP decoder, each sampled point <code class="docutils literal notranslate"><span class="pre">pt_3d_i</span></code> is annotated with opacity value <code class="docutils literal notranslate"><span class="pre">o_i</span></code> and color vector <code class="docutils literal notranslate"><span class="pre">c_i</span></code> (of an arbitrary dimension). Here opacity <code class="docutils literal notranslate"><span class="pre">o_i</span> <span class="pre">=</span> <span class="pre">softplus(ro_i)</span></code> is a softplus-activated raw opacity <code class="docutils literal notranslate"><span class="pre">ro_i</span></code>, and <code class="docutils literal notranslate"><span class="pre">c_i</span> <span class="pre">=</span> <span class="pre">sigmoid(lc_i)</span></code> is output by a sigmoid activation of predicted color logits <code class="docutils literal notranslate"><span class="pre">lc_i</span></code>.</p>
+<p>The architecture of the decoder depends on the value of <code class="docutils literal notranslate"><span class="pre">use_separate_color_grid</span></code> argument of <a class="reference internal" href="lightplane_renderer_api.html#lightplane.LightplaneRenderer" title="lightplane.LightplaneRenderer"><span class="xref myst py py-class"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer</span></code></span></a>:</p>
+<ol class="arabic">
+<li><p><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer.use_separate_color_grid==False</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">-&gt;</span> <span class="n">f_i</span> <span class="o">-&gt;</span> <span class="n">trunk_mlp</span> <span class="o">-&gt;</span> <span class="n">e_i</span> <span class="o">-&gt;</span> <span class="n">e_i</span> <span class="o">+</span> <span class="n">ray_encoding</span> <span class="o">-&gt;</span> <span class="n">color_mlp</span> <span class="o">-&gt;</span> <span class="n">c_i</span>
+                                <span class="o">-&gt;</span> <span class="n">opacity_mlp</span> <span class="o">-&gt;</span> <span class="n">o_i</span>
+</pre></div>
+</div>
+<p>An MLP <code class="docutils literal notranslate"><span class="pre">trunk_mlp</span></code> maps the grid-sampled feature <code class="docutils literal notranslate"><span class="pre">f_i</span></code> to a trunk feature <code class="docutils literal notranslate"><span class="pre">e_i</span></code>, which is later converted to opacity and color with a pair of additional color and opacity MLP heads <code class="docutils literal notranslate"><span class="pre">color_mlp</span></code> and <code class="docutils literal notranslate"><span class="pre">opacity_mlp</span></code>. The trunk feature <code class="docutils literal notranslate"><span class="pre">e_i</span></code> is summed with <code class="docutils literal notranslate"><span class="pre">ray_encoding</span></code> before <code class="docutils literal notranslate"><span class="pre">color_mlp</span></code> to make the predicted color viewpoint dependent.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer.use_separate_color_grid==True</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span>       <span class="o">-&gt;</span> <span class="n">f_i</span>  <span class="o">-&gt;</span> <span class="n">opacity_mlp</span> <span class="o">-&gt;</span> <span class="n">o_i</span>
+<span class="n">color_grid</span> <span class="o">-&gt;</span> <span class="n">cf_i</span> <span class="o">-&gt;</span> <span class="n">cf_i</span> <span class="o">+</span> <span class="n">ray_encoding</span> <span class="o">-&gt;</span> <span class="n">color_mlp</span> <span class="o">-&gt;</span> <span class="n">c_i</span>
+</pre></div>
+</div>
+<p>The lightplane kernel receives a pair of opacity and color grid-lists <code class="docutils literal notranslate"><span class="pre">grid</span></code> and <code class="docutils literal notranslate"><span class="pre">color_grid</span></code>. Each grid-list is sampled yielding features <code class="docutils literal notranslate"><span class="pre">f_i</span></code> and <code class="docutils literal notranslate"><span class="pre">cf_i</span></code> respectively, followed by a grid-specific MLP (<code class="docutils literal notranslate"><span class="pre">opacity_mlp</span></code>, <code class="docutils literal notranslate"><span class="pre">color_mlp</span></code>) converting the sampled feature to opacity and color. The color feature <code class="docutils literal notranslate"><span class="pre">cf_i</span></code> is summed with <code class="docutils literal notranslate"><span class="pre">ray_encoding</span></code> before <code class="docutils literal notranslate"><span class="pre">color_mlp</span></code> to make the predicted color viewpoint dependent.</p>
+</li>
+</ol>
+</li>
+<li><p>The list of colors and opacities predicted for each point along the ray is integrated to form the final color render <code class="docutils literal notranslate"><span class="pre">c</span></code> (real vector), ray-length render <code class="docutils literal notranslate"><span class="pre">r</span></code> (scalar in <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">inf]</span></code>), and alpha value <code class="docutils literal notranslate"><span class="pre">m</span></code> (scalar in <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1]</span></code>):</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">sum_</span><span class="p">[</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span> <span class="o">...</span> <span class="n">N</span><span class="p">]</span> <span class="p">(</span><span class="n">T_</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">T_i</span><span class="p">)</span> <span class="o">*</span> <span class="n">c_i</span>  <span class="c1"># color render</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">sum_</span><span class="p">[</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span> <span class="o">...</span> <span class="n">N</span><span class="p">]</span> <span class="p">(</span><span class="n">T_</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">T_i</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta_i</span>  <span class="c1"># ray-length render</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">T_N</span>  <span class="c1"># alpha value</span>
+<span class="n">T_i</span> <span class="o">=</span> <span class="n">exp</span><span class="p">[</span><span class="o">-</span><span class="p">(</span><span class="n">gain</span> <span class="o">*</span> <span class="n">delta_0</span> <span class="o">*</span> <span class="n">o_0</span> <span class="o">+</span> <span class="o">...</span> <span class="o">+</span> <span class="n">gain</span> <span class="o">*</span> <span class="n">delta_i</span> <span class="n">o_i</span><span class="p">)]</span>  <span class="c1"># transmittance</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">delta_i</span></code> is the distance between two adjacent samples along the ray, and <code class="docutils literal notranslate"><span class="pre">T_i</span></code> is the Transmittance of <code class="docutils literal notranslate"><span class="pre">i</span></code>-th point.</p>
+</section>
+<section id="renderer-configuration">
+<h2>Renderer configuration<a class="headerlink" href="#renderer-configuration" title="Link to this heading"></a></h2>
+<section id="scaffolded-rendering">
+<h3>Scaffolded rendering<a class="headerlink" href="#scaffolded-rendering" title="Link to this heading"></a></h3>
+<p>Lightplane allows to use a binary voxel-grid scaffold to fast-track raymarching for ray-points that are known to be unoccupied (i.e. they have 0 opacity <code class="docutils literal notranslate"><span class="pre">o_i==0</span></code>).
+If the scaffolded raymarching is enabled, the renderer will first sample the binary scaffold voxel grid using nearest neighbor interpolation.
+For a non-zero scaffold indicator, the renderer will proceed with MLP-decoding the sampled feature to opacity and color.
+If the scaffold indicator yields zero, the renderer will skip MLP-decoding and directly output 0 opacity and color for the point.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Scaffolded ray-marching is enabled by setting the <code class="docutils literal notranslate"><span class="pre">scaffold</span></code> argument of <a class="reference internal" href="lightplane_renderer_api.html#lightplane.LightplaneRenderer.forward" title="lightplane.LightplaneRenderer.forward"><span class="xref myst py py-meth"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer.forward</span></code></span></a> to a
+binary <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">D,</span> <span class="pre">H,</span> <span class="pre">W)</span></code> tensor.</p>
+</div>
+</section>
+<section id="opacity-noise-injection">
+<h3>Opacity noise injection<a class="headerlink" href="#opacity-noise-injection" title="Link to this heading"></a></h3>
+<p>To prevent the renderering decoder from collapsing to predicting zero opacities everywhere, the renderer also supports random opacity noise injection.
+If enabled, the opacity <code class="docutils literal notranslate"><span class="pre">o_i</span> <span class="pre">=</span> <span class="pre">softplus(ro_i</span> <span class="pre">+</span> <span class="pre">n_i);</span> <span class="pre">n_i</span> <span class="pre">~</span> <span class="pre">N(0,</span> <span class="pre">inject_noise_sigma)</span></code> is redefined to <code class="docutils literal notranslate"><span class="pre">softplus</span></code>-activate the predicted raw opacity jittered with a noise vector <code class="docutils literal notranslate"><span class="pre">eps</span></code> sampled from a zero-centered Gaussian with variance <code class="docutils literal notranslate"><span class="pre">inject_noise_sigma</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Opacity noise injection is enabled by setting the <code class="docutils literal notranslate"><span class="pre">inject_noise_sigma</span></code> argument of <a class="reference internal" href="lightplane_renderer_api.html#lightplane.LightplaneRenderer" title="lightplane.LightplaneRenderer"><span class="xref myst py py-class"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer</span></code></span></a> to a value bigger than 0. Reproducible rendering passes can be achieved by setting the seed <code class="docutils literal notranslate"><span class="pre">inject_noise_sigma</span></code> of the random noise to an integer.</p>
+</div>
+</section>
+<section id="modeling-background">
+<h3>Modeling background<a class="headerlink" href="#modeling-background" title="Link to this heading"></a></h3>
+<p>The default Lightplane renderer only represents points lying inside the <code class="docutils literal notranslate"><span class="pre">[-1,1]</span></code> NDC cube which can be limiting for unbounded outdoor scenes where representing distant background is important.</p>
+<p>To help representing the background, Lightplane supports two important tools:
+a) Disparity-space background ray-point sampling
+b) Coordinate contraction</p>
+<section id="disparity-space-background-ray-point-sampling">
+<h4>Disparity-space background ray-point sampling<a class="headerlink" href="#disparity-space-background-ray-point-sampling" title="Link to this heading"></a></h4>
+<p>In order to render distant parts of the scene, inspired by <a class="reference external" href="https://arxiv.org/abs/2010.07492">NeRF++</a>, Lightplane supports sampling of ray points beyond the <code class="docutils literal notranslate"><span class="pre">far</span></code> plane with disparity spacing.</p>
+<p>More specifically, <code class="docutils literal notranslate"><span class="pre">Delta_i</span></code> defines the sample spacing of between the <code class="docutils literal notranslate"><span class="pre">i</span></code>-th and <code class="docutils literal notranslate"><span class="pre">i+1</span></code>-th 3d point <code class="docutils literal notranslate"><span class="pre">far_pt_3d_i</span></code> beyond sampled beyond its ray’s <code class="docutils literal notranslate"><span class="pre">far</span></code> ray-length as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Delta_i</span> <span class="o">=</span> <span class="n">far</span> <span class="o">/</span> <span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">disparity_at_inf</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_samples_inf</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">num_samples_inf</span></code> corresponds to the total number of background ray-points and <code class="docutils literal notranslate"><span class="pre">disparity_at_inf</span></code> is a small constant defining the disparity of the last sample along the ray.</p>
+<p>For illustration, the following plots the ray-length <code class="docutils literal notranslate"><span class="pre">r_i</span> <span class="pre">=</span> <span class="pre">sum(delta_0,</span> <span class="pre">...,</span> <span class="pre">delta_N,</span> <span class="pre">Delta_0,</span> <span class="pre">...,</span> <span class="pre">Delta_i)</span></code> as a function of the index <code class="docutils literal notranslate"><span class="pre">i</span></code> of the point along the ray:</p>
+<img src="_static/assets/bg_samples_ray_length.png" width="600"/>
+<p>For the following settings: <code class="docutils literal notranslate"><span class="pre">num_samples</span> <span class="pre">=</span> <span class="pre">num_samples_inf</span> <span class="pre">=</span> <span class="pre">128,</span> <span class="pre">disparity_at_inf</span> <span class="pre">=</span> <span class="pre">0.001,</span> <span class="pre">near</span> <span class="pre">=</span> <span class="pre">0.1,</span> <span class="pre">far</span> <span class="pre">=</span> <span class="pre">1.0</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The disparity-space sampling is enabled by setting <code class="docutils literal notranslate"><span class="pre">num_samples_inf</span></code> in <a class="reference internal" href="lightplane_renderer_api.html#lightplane.LightplaneRenderer" title="lightplane.LightplaneRenderer"><span class="xref myst py py-class"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer</span></code></span></a> to an integer value &gt; 0.</p>
+</div>
+</section>
+<section id="coordinate-contraction">
+<h4>Coordinate contraction<a class="headerlink" href="#coordinate-contraction" title="Link to this heading"></a></h4>
+<p>Disparity-space sampling alone is inefficient for modelling distant space because the grid-list represents only the space within the <code class="docutils literal notranslate"><span class="pre">[-1,1]</span></code> cube.</p>
+<p>To deal with the latter, following <a class="reference external" href="https://arxiv.org/abs/2302.12249">MERF</a>, we allow the box-based coordinate contraction function which ensures that any finite 3D point <code class="docutils literal notranslate"><span class="pre">pt_3d</span></code> lands lands within the <code class="docutils literal notranslate"><span class="pre">[-1,</span> <span class="pre">1]</span></code> cube:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                     <span class="mf">0.5</span> <span class="o">*</span> <span class="n">pt_3d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>                                   <span class="k">if</span> <span class="o">|</span><span class="n">pt_3d</span><span class="o">|</span><span class="n">_inf</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+<span class="n">contract</span><span class="p">(</span><span class="n">pt_3d</span><span class="p">)[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">pt_3d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="o">|</span><span class="n">pt_3d</span><span class="o">|</span><span class="n">_inf</span>                     <span class="k">if</span> <span class="n">pt_3d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="o">|</span><span class="n">pt_3d</span><span class="o">|</span><span class="n">_inf</span> <span class="o">&gt;</span> <span class="mi">1</span>
+                     <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">pt_3d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="n">pt_3d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="o">|</span><span class="n">pt_3d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">|</span>     <span class="k">if</span> <span class="n">pt_3d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="o">|</span><span class="n">pt_3d</span><span class="o">|</span><span class="n">_inf</span> <span class="o">&gt;</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">in</span> <span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">2]</span></code> is the coordinate index.</p>
+<p>When coordinate contraction is enabled, it is applied to the ray-point before just before sampling features from the grid-list:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pt_3d</span> <span class="o">=</span> <span class="n">contract</span><span class="p">(</span><span class="n">origin</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="n">direction</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Coordinate contraction is enabled by setting <code class="docutils literal notranslate"><span class="pre">contract_coords</span></code> in <a class="reference internal" href="lightplane_renderer_api.html#lightplane.LightplaneRenderer" title="lightplane.LightplaneRenderer"><span class="xref myst py py-class"><code class="docutils literal notranslate"><span class="pre">LightplaneRenderer</span></code></span></a> to <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="rendering_rays.html" class="btn btn-neutral float-left" title="Rendering rays" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="lightplane_splatter.html" class="btn btn-neutral float-right" title="Lightplane Splatter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Meta AI Research.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

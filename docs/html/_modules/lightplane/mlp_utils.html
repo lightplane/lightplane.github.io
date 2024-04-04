@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lightplane.mlp_utils &mdash; Lightplane  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Lightplane
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../feature_grids.html">3D feature grids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rendering_rays.html">Rendering rays</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer.html">Lightplane Renderer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_splatter.html">Lightplane Splatter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cog_code_generator.html">COG Code Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark.html">Memory &amp; Speed Benchmark</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer_api.html">Lightplane Renderer API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lightplane_splatter_api.html">Lightplane Splatter API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rendering_rays_api.html">Rendering rays API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mlp_api.html">MLP API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../naive_implementation_api.html">Naive Implementation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../visualisation_api.html">Visualization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../misc_utilities_api.html">Misc Utilities API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Lightplane</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lightplane.mlp_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lightplane.mlp_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Meta Platforms, Inc. and affiliates.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># This source code is licensed under the BSD-style license found in the</span>
+<span class="c1"># LICENSE file in the root directory of this source tree.</span>
+
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">fields</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">getLogger</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">.triton_src.shared.const</span> <span class="kn">import</span> <span class="n">MIN_BLOCK_SIZE</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DecoderParams">
+<a class="viewcode-back" href="../../mlp_api.html#lightplane.DecoderParams">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">DecoderParams</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class configuring the learnable parameters of the decoder from Lightplane Renderer.</span>
+
+<span class="sd">    The decoder comprises a learnable function that predicts color and an opacity value</span>
+<span class="sd">    given a grid feature sampled at every point along a rendering ray.</span>
+
+<span class="sd">    Specifically, the decoder function consists of three MLPs: `trunk_mlp`, `opacity_mlp`,</span>
+<span class="sd">    and `color_mlp`.</span>
+<span class="sd">    The three MLPs predict opacity and color as follows:</span>
+
+<span class="sd">        1) `use_separate_color_grid==False`::</span>
+
+<span class="sd">            grid -&gt; f_i -&gt; trunk_mlp -&gt; e_i -&gt; e_i + ray_encoding -&gt; color_mlp -&gt; c_i</span>
+<span class="sd">                                            -&gt; opacity_mlp -&gt; o_i</span>
+
+<span class="sd">        If the renderer uses a single grid for both opacity and color, an MLP</span>
+<span class="sd">        `trunk_mlp` maps the grid-sampled feature `f_i` to a trunk feature `e_i`,</span>
+<span class="sd">        which is later converted to opacity and color with a pair of additional</span>
+<span class="sd">        color and opacity MLP heads `color_mlp` and `opacity_mlp`.</span>
+<span class="sd">        The trunk feature `e_i` is summed with `ray_encoding` before `color_mlp`</span>
+<span class="sd">        to make the predicted color viewpoint dependent.</span>
+
+<span class="sd">        2) `use_separate_color_grid==True`::</span>
+
+<span class="sd">            grid       -&gt; f_i  -&gt; opacity_mlp -&gt; o_i</span>
+<span class="sd">            color_grid -&gt; cf_i -&gt; cf_i + ray_encoding -&gt; color_mlp -&gt; c_i</span>
+
+<span class="sd">        If the renderer uses a separate color grid (`use_separate_color_grid==True`),</span>
+<span class="sd">        the trunk MLP will be omitted</span>
+<span class="sd">        The `opacity_mlp` and `color_mlp` predict the opacity `o_i` and color</span>
+<span class="sd">        values `c_i`, respectively,</span>
+<span class="sd">        given an opacity/color features (`f_i` and `cf_i`) sampled from the</span>
+<span class="sd">        corresponding grid `grid` and `color_grid`.</span>
+
+<span class="sd">    The parameters of the three MLPs are stored in the `mlp_params` attribute.</span>
+<span class="sd">    Here, `mlp_params` is a 1D tensor which concatenates the flattened weight matrices</span>
+<span class="sd">    and bias vectors of the three MLPs in the following order::</span>
+
+<span class="sd">        mlp_params = torch.cat(</span>
+<span class="sd">            [</span>
+<span class="sd">                weights_trunk[0].flatten(),</span>
+<span class="sd">                ...</span>
+<span class="sd">                weights_trunk[-1].flatten(),</span>
+<span class="sd">                biases_trunk[0],</span>
+<span class="sd">                ...</span>
+<span class="sd">                biases_trunk[-1],</span>
+<span class="sd">                weights_opacity[0].flatten(),</span>
+<span class="sd">                ...</span>
+<span class="sd">                weights_opacity[-1].flatten(),</span>
+<span class="sd">                biases_opacity[0],</span>
+<span class="sd">                ...</span>
+<span class="sd">                baises_opacity[-1],</span>
+<span class="sd">                weights_color[0].flatten(),</span>
+<span class="sd">                ...</span>
+<span class="sd">                weights_color[n].flatten(),</span>
+<span class="sd">                biases_color[0],</span>
+<span class="sd">                ...</span>
+<span class="sd">                biases_color[-1],</span>
+<span class="sd">            ]</span>
+<span class="sd">        )</span>
+
+<span class="sd">    Here, `weights_XXX[i]` correspond to a `(M, N)` tensor storing the weight matrix</span>
+<span class="sd">    of the i-th MLP layer. Similarly, `biases_XXX[i]` is a `(N,)` tensor storing</span>
+<span class="sd">    the bias vector.</span>
+
+<span class="sd">    The MLP multiplies the input features from the right, i.e.::</span>
+
+<span class="sd">        output[i+1] = input[i] @ weights_XXX[i] + biases_XXX[i]</span>
+
+<span class="sd">    Hence, `M` / `N` is the input / output channel dimension.</span>
+
+<span class="sd">    In addition to the `mlp_params`, the `DecoderParams` class stores the number</span>
+<span class="sd">    of hidden units each MLP. Specifically, `n_hidden_trunk`, `n_hidden_opacity`, and</span>
+<span class="sd">    `n_hidden_color` are tensors of shape `(n_layers+1,)` that store the number of</span>
+<span class="sd">    input channels followed by the output channel number of each layer in</span>
+<span class="sd">    the trunk, opacity, and color MLPs, respectively.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        One can convert the 1D `mlp_params` tensor to the more-interpretable</span>
+<span class="sd">        list of weight matrices and bias tensors using the `flattened_decoder_params_to_list`</span>
+<span class="sd">        function.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Since the Triton language of Lightplane&#39;s GPU kernel constraints the number</span>
+<span class="sd">        of rendering channels to at least 16, the `color_chn` attribute is used to store</span>
+<span class="sd">        the effective number of rendered output channels. If the effective number of</span>
+<span class="sd">        rendered channels is less than 16, the MLP parameters are padded with zeros</span>
+<span class="sd">        to match the minimum size.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        mlp_params: The parameters for the Lightplane Rendering decoder.</span>
+<span class="sd">        n_hidden_trunk: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `trunk_mlp`. Note that this tensor can be empty if the trunk MLP is not used.</span>
+<span class="sd">        n_hidden_opacity: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `opacity_mlp`.</span>
+<span class="sd">        n_hidden_color: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `color_mlp`.</span>
+<span class="sd">        color_chn: The number of rendered channels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mlp_params</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">n_hidden_trunk</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">n_hidden_opacity</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">n_hidden_color</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">color_chn</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+
+<div class="viewcode-block" id="SplatterParams">
+<a class="viewcode-back" href="../../mlp_api.html#lightplane.SplatterParams">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">SplatterParams</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing learnable parameters of the MLP from Lightplane Splatter.</span>
+
+<span class="sd">    The splatter comprises a learnable function that predicts a vector splatted</span>
+<span class="sd">    to the output 3D feature grid. Specifically, the function is defined as follows::</span>
+
+<span class="sd">        MLP(feature_grid[x] + splatting_feature[u]) -&gt; splat_vector[x]</span>
+
+<span class="sd">    where `x` corresponds to the 3D point along the the ray of pixel `u`,</span>
+<span class="sd">    `feature_grid[x]` is the input shape grid sampled at point `x`, and</span>
+<span class="sd">    `splatting_feature[u]` is the splatted feature at pixel `u`.</span>
+<span class="sd">    The splatting MLP outputs `splat_vector[x]` which is pushed back into the</span>
+<span class="sd">    output grid.</span>
+
+<span class="sd">    The parameters of the MLP are stored in the `mlp_params` attribute.</span>
+<span class="sd">    Here, `mlp_params` is a 1D tensor which concatenates the flattened weight matrices</span>
+<span class="sd">    and bias vectors of the MLP in the following order::</span>
+
+<span class="sd">        mlp_params = torch.cat(</span>
+<span class="sd">            [</span>
+<span class="sd">                weights[0].flatten(),</span>
+<span class="sd">                ...</span>
+<span class="sd">                weights[-1].flatten(),</span>
+<span class="sd">                biases[0],</span>
+<span class="sd">                ...</span>
+<span class="sd">                biases[-1],</span>
+<span class="sd">            ]</span>
+<span class="sd">        )</span>
+
+<span class="sd">    Here, `weights[i]` correspond to a `(M, N)` tensor storing the weight matrix</span>
+<span class="sd">    of the i-th MLP layer. Similarly, `biases[i]` is a `(N,)` tensor storing</span>
+<span class="sd">    the bias vector.</span>
+
+<span class="sd">    The MLP multiplies the input features from the right, i.e.::</span>
+
+<span class="sd">        output[i+1] = input[i] @ weights[i] + biases[i]</span>
+
+<span class="sd">    Hence, `M` / `N` is the input / output channel dimension.</span>
+
+<span class="sd">    In addition to the `mlp_params`, the `SplatterParams` class stores the number</span>
+<span class="sd">    of MLP&#39;s hidden units. Specifically, the `n_hidden` field is a tensor of shape</span>
+<span class="sd">    `(n_layers+1,)` that stores the number of input channels followed by</span>
+<span class="sd">    the output channel number of each layer in the MLP.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        mlp_params: The parameters for the Lightplane rendering decoder.</span>
+<span class="sd">        n_hidden: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            splatting MLP.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mlp_params</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">n_hidden</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></div>
+
+
+
+<div class="viewcode-block" id="init_decoder_params">
+<a class="viewcode-back" href="../../mlp_api.html#lightplane.init_decoder_params">[docs]</a>
+<span class="k">def</span> <span class="nf">init_decoder_params</span><span class="p">(</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+    <span class="n">n_layers_opacity</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_layers_trunk</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_layers_color</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">input_chn</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="n">hidden_chn</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="n">color_chn</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">opacity_init_bias</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">pad_color_channels_to_min_block_size</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">use_separate_color_grid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DecoderParams</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The function initializes the learnable parameters of the Lightplane Renderer</span>
+<span class="sd">    decoder given mlp configurations.</span>
+<span class="sd">    Weights and biases of three MLPs inside decoder (`trunk_mlp`, `opacity_mlp`,</span>
+<span class="sd">    and `color_mlp`) are initialized using Xavier initialization by function `_xavier_init_mlp_params`,</span>
+<span class="sd">    and are flattened into a single tensor `mlp_params` by function `flatten_decoder_params`.</span>
+
+<span class="sd">    Since the Triton language of Lightplane&#39;s GPU kernel constraints the number</span>
+<span class="sd">    of rendering channels to at least 16, the `color_chn` attribute is used to store</span>
+<span class="sd">    the effective number of rendered output channels. If the effective number of</span>
+<span class="sd">    rendered channels is less than 16, the MLP parameters are padded with zeros</span>
+<span class="sd">    to match the minimum size.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        device: The device to store the parameters.</span>
+<span class="sd">        n_hidden_trunk: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `trunk_mlp`. Note that this tensor can be empty if the trunk MLP is not used.</span>
+<span class="sd">        n_hidden_opacity: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `opacity_mlp`.</span>
+<span class="sd">        n_hidden_color: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `color_mlp`.</span>
+<span class="sd">        input_chn: The number of input channels, which is the number of channel for</span>
+<span class="sd">            `feature_grid`.</span>
+<span class="sd">        hidden_chn: The number of hidden units in the MLP layers.</span>
+<span class="sd">        color_chn: The number of rendered channels.</span>
+<span class="sd">        opacity_init_bias: The initial bias value for the opacity MLP.</span>
+<span class="sd">        pad_color_channels_to_min_block_size: If True, the MLP parameters are padded with zeros</span>
+<span class="sd">            to match the minimum size of the triton minimum block size.</span>
+<span class="sd">        use_separate_color_grid: If True, the renderer uses a separate color grid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_layers_trunk</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">use_separate_color_grid</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">&quot;Cannot use trunk MLP with a separate color grid.&quot;</span>
+            <span class="s2">&quot; Please set n_layers_trunk==0.&quot;</span>
+        <span class="p">)</span>
+        <span class="p">(</span><span class="n">weights_trunk</span><span class="p">,</span> <span class="n">biases_trunk</span><span class="p">,)</span> <span class="o">=</span> <span class="n">_xavier_init_mlp_params</span><span class="p">(</span>
+            <span class="n">n_layers_trunk</span><span class="p">,</span>
+            <span class="n">input_chn</span><span class="p">,</span>
+            <span class="n">hidden_chn</span><span class="p">,</span>
+            <span class="n">hidden_chn</span><span class="p">,</span>
+            <span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">weights_trunk</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">biases_trunk</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="p">(</span><span class="n">weights_opacity</span><span class="p">,</span> <span class="n">biases_opacity</span><span class="p">,)</span> <span class="o">=</span> <span class="n">_xavier_init_mlp_params</span><span class="p">(</span>
+        <span class="n">n_layers_opacity</span><span class="p">,</span>
+        <span class="n">input_chn</span> <span class="k">if</span> <span class="n">use_separate_color_grid</span> <span class="k">else</span> <span class="n">hidden_chn</span><span class="p">,</span>
+        <span class="n">hidden_chn</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">,</span>
+        <span class="n">last_bias</span><span class="o">=</span><span class="n">opacity_init_bias</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="p">(</span><span class="n">weights_color</span><span class="p">,</span> <span class="n">biases_color</span><span class="p">,)</span> <span class="o">=</span> <span class="n">_xavier_init_mlp_params</span><span class="p">(</span>
+        <span class="n">n_layers_color</span><span class="p">,</span>
+        <span class="n">input_chn</span> <span class="k">if</span> <span class="n">use_separate_color_grid</span> <span class="k">else</span> <span class="n">hidden_chn</span><span class="p">,</span>
+        <span class="n">hidden_chn</span><span class="p">,</span>
+        <span class="n">color_chn</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># for p in [</span>
+    <span class="c1">#     *weights_trunk, *biases_trunk,</span>
+    <span class="c1">#     *weights_opacity, *biases_opacity,</span>
+    <span class="c1">#     *weights_color, *biases_color,</span>
+    <span class="c1"># ]:</span>
+    <span class="c1">#     print(p.shape)</span>
+
+    <span class="c1"># set the mlp params</span>
+    <span class="p">(</span>
+        <span class="n">mlp_params</span><span class="p">,</span>
+        <span class="n">n_hidden_trunk</span><span class="p">,</span>
+        <span class="n">n_hidden_opacity</span><span class="p">,</span>
+        <span class="n">n_hidden_color</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">flatten_decoder_params</span><span class="p">(</span>
+        <span class="n">weights_trunk</span><span class="p">,</span>
+        <span class="n">biases_trunk</span><span class="p">,</span>
+        <span class="n">weights_opacity</span><span class="p">,</span>
+        <span class="n">biases_opacity</span><span class="p">,</span>
+        <span class="n">weights_color</span><span class="p">,</span>
+        <span class="n">biases_color</span><span class="p">,</span>
+        <span class="n">pad_color_channels_to_min_block_size</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">DecoderParams</span><span class="p">(</span>
+        <span class="n">mlp_params</span><span class="p">,</span>
+        <span class="n">n_hidden_trunk</span><span class="p">,</span>
+        <span class="n">n_hidden_opacity</span><span class="p">,</span>
+        <span class="n">n_hidden_color</span><span class="p">,</span>
+        <span class="n">color_chn</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="init_splatter_params">
+<a class="viewcode-back" href="../../mlp_api.html#lightplane.init_splatter_params">[docs]</a>
+<span class="k">def</span> <span class="nf">init_splatter_params</span><span class="p">(</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+    <span class="n">n_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">input_chn</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="n">hidden_chn</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="n">out_chn</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SplatterParams</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The function initializes the learnable parameters of the Lightplane Splatter</span>
+<span class="sd">    given mlp configurations.</span>
+<span class="sd">    Weights and biases of the MLP inside LightPlane Splatter are initialized using</span>
+<span class="sd">    Xavier initialization by function `_xavier_init_mlp_params`,</span>
+<span class="sd">    and are flattened into a single tensor `mlp_params` by function `flatten_splatter_params`.</span>
+
+<span class="sd">    Since the outout of the mlp is a vector splatted to the output 3D feature grid,</span>
+<span class="sd">    whose number of channels is the same as the `output_grid`, which is typically more</span>
+<span class="sd">    than 16.</span>
+<span class="sd">    So we do not need to pad the MLP parameters to match the minimum size of the triton</span>
+<span class="sd">    minimum block size.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        device: The device to store the parameters.</span>
+<span class="sd">        n_layers: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            mlp.</span>
+<span class="sd">        input_chn: The number of input channels.</span>
+<span class="sd">        hidden_chn: The number of hidden units in the MLP layers.</span>
+<span class="sd">        out_chn: The number of output channels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">biases</span><span class="p">)</span> <span class="o">=</span> <span class="n">_xavier_init_mlp_params</span><span class="p">(</span>
+        <span class="n">n_layers</span><span class="p">,</span> <span class="n">input_chn</span><span class="p">,</span> <span class="n">hidden_chn</span><span class="p">,</span> <span class="n">out_chn</span><span class="p">,</span> <span class="n">device</span>
+    <span class="p">)</span>
+
+    <span class="n">mlp_params</span><span class="p">,</span> <span class="n">n_hidden</span> <span class="o">=</span> <span class="n">flatten_splatter_params</span><span class="p">(</span>
+        <span class="n">weights</span><span class="p">,</span>
+        <span class="n">biases</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">SplatterParams</span><span class="p">(</span>
+        <span class="n">mlp_params</span><span class="p">,</span>
+        <span class="n">n_hidden</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_triton_function_input_dims">
+<a class="viewcode-back" href="../../mlp_api.html#lightplane.get_triton_function_input_dims">[docs]</a>
+<span class="k">def</span> <span class="nf">get_triton_function_input_dims</span><span class="p">(</span>
+    <span class="n">n_hidden_trunk</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">n_hidden_opacity</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">n_hidden_color</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to get the MLP layers and hidden units from `n_hidden_trunk`,</span>
+<span class="sd">    `n_hidden_opacity` and `n_hidden_color` inside `decoder_params` object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_hidden_trunk</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># no trunk mlp</span>
+        <span class="n">mlp_n_layers_trunk</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">mlp_dim_hidden_trunk</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">mlp_dim_hidden_opacity</span><span class="p">,</span> <span class="n">mlp_dim_hidden_color</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="p">[</span><span class="n">n_hidden_opacity</span><span class="p">,</span> <span class="n">n_hidden_color</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mlp_dim_hidden_trunk</span><span class="p">,</span> <span class="n">mlp_dim_hidden_opacity</span><span class="p">,</span> <span class="n">mlp_dim_hidden_color</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="p">[</span><span class="n">n_hidden_trunk</span><span class="p">,</span> <span class="n">n_hidden_opacity</span><span class="p">,</span> <span class="n">n_hidden_color</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># all trunk hidden layers have to have the same number of hidden units</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">n_hidden_trunk</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">==</span> <span class="n">mlp_dim_hidden_trunk</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">mlp_n_layers_trunk</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">n_hidden_trunk</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">n_hidden_opacity</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">mlp_dim_hidden_opacity</span> <span class="o">==</span> <span class="n">n_hidden_opacity</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">n_hidden_color</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">mlp_dim_hidden_color</span> <span class="o">==</span> <span class="n">n_hidden_color</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+    <span class="n">num_render_channels</span> <span class="o">=</span> <span class="n">n_hidden_color</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="n">mlp_n_layers_opacity</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">n_hidden_opacity</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">mlp_n_layers_color</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">n_hidden_color</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">mlp_dim_hidden_trunk</span><span class="p">,</span>
+        <span class="n">mlp_dim_hidden_opacity</span><span class="p">,</span>
+        <span class="n">mlp_dim_hidden_color</span><span class="p">,</span>
+        <span class="n">mlp_n_layers_trunk</span><span class="p">,</span>
+        <span class="n">mlp_n_layers_opacity</span><span class="p">,</span>
+        <span class="n">mlp_n_layers_color</span><span class="p">,</span>
+        <span class="n">num_render_channels</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="c1"># ------------------------</span>
+<span class="c1"># --- Helper functions ---</span>
+<span class="c1"># ------------------------</span>
+
+
+<div class="viewcode-block" id="flatten_decoder_params">
+<a class="viewcode-back" href="../../mlp_api.html#lightplane.flatten_decoder_params">[docs]</a>
+<span class="k">def</span> <span class="nf">flatten_decoder_params</span><span class="p">(</span>
+    <span class="n">weights_trunk</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">biases_trunk</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">weights_opacity</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">biases_opacity</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">weights_color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">biases_color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">pad_color_channels_to_min_block_size</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The hepler function to flatten the decoder parameters into a single tensor,</span>
+<span class="sd">    and get the number of hidden units for each layer in each MLP (`n_hidden_XX`).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        weights_trunk: Tuple of weight matrices for `trunk_mlp`.</span>
+<span class="sd">        biases_trunk: Tuple of bias vectors for `trunk_mlp`.</span>
+<span class="sd">        weights_opacity: Tuple of weight matrices for `opacity_mlp`.</span>
+<span class="sd">        biases_opacity: Tuple of bias vectors for `opacity_mlp`.</span>
+<span class="sd">        weights_color: Tuple of weight matrices for `color_mlp`.</span>
+<span class="sd">        biases_color: Tuple of bias vectors for `color_mlp`.</span>
+<span class="sd">        pad_color_channels_to_min_block_size: If True, the MLP parameters are padded with zeros</span>
+<span class="sd">            to match the minimum size of the triton minimum block size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: return the flattened param vector from DecoderParams directly</span>
+    <span class="n">num_pad_channels_color</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">pad_color_channels_to_min_block_size</span><span class="p">:</span>
+        <span class="n">color_chn</span> <span class="o">=</span> <span class="n">biases_color</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+        <span class="n">num_pad_channels_color</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">MIN_BLOCK_SIZE</span> <span class="o">-</span> <span class="n">color_chn</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">num_pad_channels_color</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">weights_color</span><span class="p">,</span> <span class="n">biases_color</span> <span class="o">=</span> <span class="n">_pad_color_mlp_params</span><span class="p">(</span>
+            <span class="n">weights_color</span><span class="p">,</span>
+            <span class="n">biases_color</span><span class="p">,</span>
+            <span class="n">num_pad_channels_color</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">mlp_params</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">t_elem</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="n">weights_trunk</span><span class="p">,</span>
+                <span class="n">biases_trunk</span><span class="p">,</span>
+                <span class="n">weights_opacity</span><span class="p">,</span>
+                <span class="n">biases_opacity</span><span class="p">,</span>
+                <span class="n">weights_color</span><span class="p">,</span>
+                <span class="n">biases_color</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="k">for</span> <span class="n">t_elem</span> <span class="ow">in</span> <span class="n">t</span>
+        <span class="p">],</span>
+        <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+
+    <span class="c1"># set the numbers of hidden units in each mlp</span>
+    <span class="n">n_hidden_trunk</span><span class="p">,</span> <span class="n">n_hidden_opacity</span><span class="p">,</span> <span class="n">n_hidden_color</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">_get_n_hidden</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">mlp_params</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="p">[</span><span class="n">weights_trunk</span><span class="p">,</span> <span class="n">weights_opacity</span><span class="p">,</span> <span class="n">weights_color</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">_validate_flattened_mlp_params</span><span class="p">(</span>
+        <span class="n">mlp_params</span><span class="p">,</span>
+        <span class="n">n_hidden_trunk</span><span class="p">,</span>
+        <span class="n">n_hidden_opacity</span><span class="p">,</span>
+        <span class="n">n_hidden_color</span><span class="p">,</span>
+        <span class="n">pad_color_channels_to_min_block_size</span><span class="o">=</span><span class="n">pad_color_channels_to_min_block_size</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mlp_params</span><span class="p">,</span> <span class="n">n_hidden_trunk</span><span class="p">,</span> <span class="n">n_hidden_opacity</span><span class="p">,</span> <span class="n">n_hidden_color</span></div>
+
+
+
+<div class="viewcode-block" id="flatten_splatter_params">
+<a class="viewcode-back" href="../../mlp_api.html#lightplane.flatten_splatter_params">[docs]</a>
+<span class="k">def</span> <span class="nf">flatten_splatter_params</span><span class="p">(</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">biases</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The hepler function to flatten the splatter parameters into a single tensor,</span>
+<span class="sd">    and get the number of hidden units for each layer in the MLP (`n_hidden`).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        weights: Tuple of weight matrices for the MLP.</span>
+<span class="sd">        biases: Tuple of bias vectors for the MLP.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mlp_params</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">t_elem</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="n">weights</span><span class="p">,</span>
+                <span class="n">biases</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="k">for</span> <span class="n">t_elem</span> <span class="ow">in</span> <span class="n">t</span>
+        <span class="p">],</span>
+        <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+
+    <span class="c1"># set the numbers of hidden units in each mlp</span>
+    <span class="n">n_hidden</span> <span class="o">=</span> <span class="n">_get_n_hidden</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">mlp_params</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mlp_params</span><span class="p">,</span> <span class="n">n_hidden</span></div>
+
+
+
+<div class="viewcode-block" id="flattened_decoder_params_to_list">
+<a class="viewcode-back" href="../../mlp_api.html#lightplane.flattened_decoder_params_to_list">[docs]</a>
+<span class="k">def</span> <span class="nf">flattened_decoder_params_to_list</span><span class="p">(</span>
+    <span class="n">mlp_params</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">n_hidden_trunk</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">n_hidden_opacity</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">n_hidden_color</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">transpose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+    <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function converts the flattened MLP parameters into a list of weight matrices,</span>
+<span class="sd">    and bias vectors for each MLP.</span>
+<span class="sd">    It is the inverse function of `flatten_decoder_params`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mlp_params: The flattened MLP parameters, i.e. 1D tensor.</span>
+<span class="sd">        n_hidden_trunk: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `trunk_mlp`. Note that this tensor can be empty if the trunk MLP is not used.</span>
+<span class="sd">        n_hidden_opacity: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `opacity_mlp`.</span>
+<span class="sd">        n_hidden_color: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `color_mlp`.</span>
+<span class="sd">        transpose: If True, the weight matrices are transposed.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        weights_trunk: Weight matrices of the trunk MLP.</span>
+<span class="sd">        biases_trunk: Bias vectors of the trunk MLP.</span>
+<span class="sd">        weights_opacity: Weight matrices of the opacity MLP.</span>
+<span class="sd">        biases_opacity: Bias vectors of the opacity MLP.</span>
+<span class="sd">        weights_color: Weight matrices of the color MLP.</span>
+<span class="sd">        biases_color: Bias vectors of the color MLP.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">numel_trunk</span><span class="p">,</span> <span class="n">numel_opacity</span><span class="p">,</span> <span class="n">numel_color</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">nh</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">@</span> <span class="n">nh</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">nh</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">nh</span> <span class="ow">in</span> <span class="p">[</span><span class="n">n_hidden_trunk</span><span class="p">,</span> <span class="n">n_hidden_opacity</span><span class="p">,</span> <span class="n">n_hidden_color</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">weights_trunk</span><span class="p">,</span> <span class="n">biases_trunk</span> <span class="o">=</span> <span class="n">_flattened_one_mlp_params_to_list</span><span class="p">(</span>
+        <span class="n">mlp_params</span><span class="p">[:</span><span class="n">numel_trunk</span><span class="p">],</span>
+        <span class="n">n_hidden_trunk</span><span class="p">,</span>
+        <span class="n">transpose</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">weights_opacity</span><span class="p">,</span> <span class="n">biases_opacity</span> <span class="o">=</span> <span class="n">_flattened_one_mlp_params_to_list</span><span class="p">(</span>
+        <span class="n">mlp_params</span><span class="p">[</span><span class="n">numel_trunk</span> <span class="p">:</span> <span class="p">(</span><span class="n">numel_trunk</span> <span class="o">+</span> <span class="n">numel_opacity</span><span class="p">)],</span>
+        <span class="n">n_hidden_opacity</span><span class="p">,</span>
+        <span class="n">transpose</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">weights_color</span><span class="p">,</span> <span class="n">biases_color</span> <span class="o">=</span> <span class="n">_flattened_one_mlp_params_to_list</span><span class="p">(</span>
+        <span class="n">mlp_params</span><span class="p">[(</span><span class="n">numel_trunk</span> <span class="o">+</span> <span class="n">numel_opacity</span><span class="p">)</span> <span class="p">:],</span>
+        <span class="n">n_hidden_color</span><span class="p">,</span>
+        <span class="n">transpose</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">weights_trunk</span><span class="p">,</span>
+        <span class="n">biases_trunk</span><span class="p">,</span>
+        <span class="n">weights_opacity</span><span class="p">,</span>
+        <span class="n">biases_opacity</span><span class="p">,</span>
+        <span class="n">weights_color</span><span class="p">,</span>
+        <span class="n">biases_color</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="flattened_triton_decoder_to_list">
+<a class="viewcode-back" href="../../mlp_api.html#lightplane.flattened_triton_decoder_to_list">[docs]</a>
+<span class="k">def</span> <span class="nf">flattened_triton_decoder_to_list</span><span class="p">(</span>
+    <span class="n">mlp_params</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">n_layers_trunk</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_layers_opacity</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_layers_color</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">input_chn</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">hidden_chn</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">color_chn</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Another helper function to convert the flattened MLP parameters into a list</span>
+<span class="sd">    of weight matrices, and bias vectors for each MLP.</span>
+<span class="sd">    Given `mlp_params`, the number of layers for each MLP, input/output number</span>
+<span class="sd">    of channesl, and hidden units number, this function returns the list of weight</span>
+<span class="sd">    matrices and bias vectors for each MLP.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mlp_params: The flattened MLP parameters, i.e. 1D tensor.</span>
+<span class="sd">        n_layers_trunk: The number of layers in the `trunk_mlp`.</span>
+<span class="sd">        n_layers_opacity: The number of layers in the `opacity_mlp`.</span>
+<span class="sd">        n_layers_color: The number of layers in the `color_mlp`.</span>
+<span class="sd">        input_chn: The number of input channels.</span>
+<span class="sd">        hidden_chn: The number of hidden units in the MLP layers.</span>
+<span class="sd">        color_chn: The number of rendered channels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_make_n_hidden</span><span class="p">(</span><span class="n">dim_in</span><span class="p">,</span> <span class="n">dim_hidden</span><span class="p">,</span> <span class="n">dim_out</span><span class="p">,</span> <span class="n">n_layers</span><span class="p">):</span>
+        <span class="n">n_hidden</span> <span class="o">=</span> <span class="p">[</span><span class="n">dim_in</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_layers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">n_hidden</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dim_hidden</span><span class="p">)</span>
+        <span class="n">n_hidden</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dim_out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">n_hidden</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">mlp_params</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="n">n_hidden_trunk</span> <span class="o">=</span> <span class="n">_make_n_hidden</span><span class="p">(</span><span class="n">input_chn</span><span class="p">,</span> <span class="n">hidden_chn</span><span class="p">,</span> <span class="n">hidden_chn</span><span class="p">,</span> <span class="n">n_layers_trunk</span><span class="p">)</span>
+    <span class="n">n_hidden_opacity</span> <span class="o">=</span> <span class="n">_make_n_hidden</span><span class="p">(</span><span class="n">hidden_chn</span><span class="p">,</span> <span class="n">hidden_chn</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_layers_opacity</span><span class="p">)</span>
+    <span class="n">n_hidden_color</span> <span class="o">=</span> <span class="n">_make_n_hidden</span><span class="p">(</span><span class="n">hidden_chn</span><span class="p">,</span> <span class="n">hidden_chn</span><span class="p">,</span> <span class="n">color_chn</span><span class="p">,</span> <span class="n">n_layers_color</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flattened_decoder_params_to_list</span><span class="p">(</span>
+        <span class="n">mlp_params</span><span class="p">,</span>
+        <span class="n">n_hidden_trunk</span><span class="p">,</span>
+        <span class="n">n_hidden_opacity</span><span class="p">,</span>
+        <span class="n">n_hidden_color</span><span class="p">,</span>
+        <span class="n">transpose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="c1"># --------------------------------</span>
+<span class="c1"># --- Helper private functions ---</span>
+<span class="c1"># --------------------------------</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_flattened_mlp_params</span><span class="p">(</span>
+    <span class="n">mlp_params</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">n_hidden_trunk</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">n_hidden_opacity</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">n_hidden_color</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">pad_color_channels_to_min_block_size</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A helper function to validate whether the size of `mlp_params` satisfies the</span>
+<span class="sd">    configuration specified by `n_hidden_trunk`, `n_hidden_opacity`, and</span>
+<span class="sd">    `n_hidden_color`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mlp_params: The flattened MLP parameters, i.e. 1D tensor.</span>
+<span class="sd">        n_hidden_trunk: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `trunk_mlp`. Note that this tensor can be empty if the trunk MLP is not used.</span>
+<span class="sd">        n_hidden_opacity: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `opacity_mlp`.</span>
+<span class="sd">        n_hidden_color: `(n_layers+1,)` Long tensor storing the number of</span>
+<span class="sd">            input channels followed by the number of hidden units in each layer of the</span>
+<span class="sd">            `color_mlp`.</span>
+<span class="sd">        pad_color_channels_to_min_block_size: If True, the MLP parameters are padded with zeros</span>
+<span class="sd">            to match the minimum size of the triton minimum block size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">n_hidden_trunk</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span>
+    <span class="k">assert</span> <span class="n">n_hidden_opacity</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span>
+    <span class="k">assert</span> <span class="n">n_hidden_color</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span>
+    <span class="k">assert</span> <span class="n">mlp_params</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span>
+
+    <span class="p">(</span>
+        <span class="n">weights_trunk</span><span class="p">,</span>
+        <span class="n">biases_trunk</span><span class="p">,</span>
+        <span class="n">weights_opacity</span><span class="p">,</span>
+        <span class="n">biases_opacity</span><span class="p">,</span>
+        <span class="n">weights_color</span><span class="p">,</span>
+        <span class="n">biases_color</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">flattened_decoder_params_to_list</span><span class="p">(</span>
+        <span class="n">mlp_params</span><span class="p">,</span>
+        <span class="n">n_hidden_trunk</span><span class="p">,</span>
+        <span class="n">n_hidden_opacity</span><span class="p">,</span>
+        <span class="n">n_hidden_color</span><span class="p">,</span>
+        <span class="n">transpose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">weights_trunk</span><span class="p">,</span> <span class="n">biases_trunk</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">weights_opacity</span><span class="p">,</span> <span class="n">biases_opacity</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">weights_color</span><span class="p">,</span> <span class="n">biases_color</span><span class="p">),</span>
+    <span class="p">):</span>
+        <span class="n">_validate_mlp_params_list</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">pad_color_channels_to_min_block_size</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">biases_color</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">MIN_BLOCK_SIZE</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_mlp_params_list</span><span class="p">(</span>
+    <span class="n">weights_list</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">biases_list</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to validate the weight matrices and bias vectors of an MLP.</span>
+<span class="sd">    It checks the shape and device of the weights and biases, and the consistency</span>
+<span class="sd">    of the dimensions between the layers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">weights_list</span><span class="p">,</span> <span class="n">biases_list</span><span class="p">)):</span>
+        <span class="n">dim_in</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dim_out</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">w</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">device</span>
+        <span class="k">assert</span> <span class="n">b</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">w</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="n">dim_out</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">w_prev</span> <span class="o">=</span> <span class="n">weights_list</span><span class="p">[</span><span class="n">l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">w_prev</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">dim_in</span>
+
+
+<span class="k">def</span> <span class="nf">_flattened_one_mlp_params_to_list</span><span class="p">(</span>
+    <span class="n">mlp_params</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">n_hidden</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">transpose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to convert the flattened MLP parameters into a list of weight matrices</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nl</span> <span class="o">=</span> <span class="n">n_hidden</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="n">indims</span> <span class="o">=</span> <span class="n">n_hidden</span><span class="p">[:</span><span class="n">nl</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">outdims</span> <span class="o">=</span> <span class="n">n_hidden</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">numels</span> <span class="o">=</span> <span class="n">n_hidden</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_hidden</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">tot_numel</span> <span class="o">=</span> <span class="n">numels</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">w_mlp_params</span><span class="p">,</span> <span class="n">b_mlp_params</span> <span class="o">=</span> <span class="n">mlp_params</span><span class="p">[:</span><span class="n">tot_numel</span><span class="p">],</span> <span class="n">mlp_params</span><span class="p">[</span><span class="n">tot_numel</span><span class="p">:]</span>
+    <span class="k">assert</span> <span class="n">w_mlp_params</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="n">tot_numel</span>
+    <span class="k">assert</span> <span class="n">b_mlp_params</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="nb">sum</span><span class="p">(</span><span class="n">outdims</span><span class="p">)</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">indim</span><span class="p">,</span> <span class="n">outdim</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">indim</span><span class="p">,</span> <span class="n">outdim</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="n">w_mlp_params</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">numels</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span>
+            <span class="n">indims</span><span class="p">,</span>
+            <span class="n">outdims</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">biases</span> <span class="o">=</span> <span class="n">b_mlp_params</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">outdims</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">transpose</span><span class="p">:</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">weights</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">weights</span><span class="p">,</span> <span class="n">biases</span>
+
+
+<span class="k">def</span> <span class="nf">_get_n_hidden</span><span class="p">(</span>
+    <span class="n">w</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to get the number of hidden units for each layer in the MLP.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">n_hidden</span> <span class="o">=</span> <span class="p">[</span><span class="n">w_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">w_</span> <span class="ow">in</span> <span class="n">w</span><span class="p">]</span>
+    <span class="n">n_hidden</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">n_hidden</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+        <span class="n">n_hidden</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">n_hidden</span>
+
+
+<span class="k">def</span> <span class="nf">_pad_color_mlp_params</span><span class="p">(</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+    <span class="n">biases</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+    <span class="n">n_pad</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to pad the MLP parameters with zeros to match the minimum output</span>
+<span class="sd">    size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">weights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">weights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_pad</span><span class="p">])</span>
+    <span class="n">biases</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">biases</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_pad</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">weights</span><span class="p">,</span> <span class="n">biases</span>
+
+
+<span class="k">def</span> <span class="nf">_xavier_init_mlp_params</span><span class="p">(</span>
+    <span class="n">n_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">input_chn</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">hidden_chn</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">output_chn</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+    <span class="n">last_bias</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">last_num_pad_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to initialize the weights and biases of an MLP with Xavier</span>
+<span class="sd">    initialization and zero padding for output channels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+            <span class="n">input_chn</span> <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">hidden_chn</span><span class="p">,</span>
+            <span class="n">output_chn</span> <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">n_layers</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">hidden_chn</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_layers</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="k">for</span> <span class="n">wi</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">weights</span><span class="p">):</span>  <span class="c1"># xavier init the weights</span>
+        <span class="n">w_init</span> <span class="o">=</span> <span class="n">w</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">w_init</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">calculate_gain</span><span class="p">(</span><span class="s2">&quot;relu&quot;</span><span class="p">))</span>
+        <span class="n">weights</span><span class="p">[</span><span class="n">wi</span><span class="p">]</span> <span class="o">=</span> <span class="n">w_init</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+
+    <span class="n">biases</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">output_chn</span><span class="p">,),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="n">last_bias</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">n_layers</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hidden_chn</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_layers</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">last_num_pad_channels</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">weights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">weights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                    <span class="n">output_chn</span><span class="p">,</span>
+                    <span class="n">last_num_pad_channels</span><span class="p">,</span>
+                    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">biases</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">biases</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                    <span class="n">last_num_pad_channels</span><span class="p">,</span>
+                    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">weights</span><span class="p">,</span> <span class="n">biases</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Meta AI Research.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
