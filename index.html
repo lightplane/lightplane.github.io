@@ -139,7 +139,7 @@
       </video>
       <!-- <h2 class="subtitle"> -->
       <h2 class="subtitle" style="text-align: center;">
-        Lightplane Renderer achieves more than <b>1000x</b> reductions in memory usage while maintaining comparable rendering speeds to existing methods, when rendering images from neural 3D fields in a differentiable manner.
+        <b><em>Lightplane Renderer</em></b> achieves more than <b>1000x</b> reductions in memory usage while maintaining comparable rendering speeds to existing methods, when rendering images from neural 3D fields in a differentiable manner.
       </h2>
     </div>
   </div>
@@ -154,7 +154,7 @@
         <div class="content has-text-justified">
             <p>
                 <b><em>Lightplane Renderer</em></b> and <b><em>Splatter</em></b> are a pair of highly scalable components for neural 3D fields that significantly reduce memory usage in 2D-3D mapping. 
-                <b><em>Lightplane Renderer</em></b> renders images from neural 3D fields, and <b><em>Lightplane Splatter</em></b> unprojects input images into neural 3D fields.
+                <b><em>Lightplane Renderer</em></b> renders images from neural 3D fields, and <b><em>Lightplane Splatter</em></b> unprojects input images into 3D Hash stuctures.
                 Both components work in a differentiable manner and significantly save memory usage.
             </p>
           <p>
@@ -169,10 +169,10 @@
         <br>
 
 
-        <h2 class="title is-5">Highly Memory-Efficient Components</h2>
+        <h2 class="title is-5">Memory-Efficient Components</h2>
         <div class="content has-text-justified">
           <p>
-            Compared to existing implementations of <span style="color: rgb(96, 130, 182)">rendering and lifting (unprojceting)</span>, <span style="color: rgb(137, 207, 240)">Lightplane Renderer and Splatter</span> exhibits over 3 orders of magnitude lower memory consumption at comparable speed. All axes are log-scaled.
+            Compared to existing implementations of <span style="color: rgb(96, 130, 182)">rendering and lifting (unprojceting)</span>, <span style="color: rgb(137, 207, 240)"><b><em>Lightplane Renderer</em></b> and <b><em>Splatter</em></b></span> exhibits over <b>3~4 orders of magnitude memory saving</b>  at comparable speed. <b>Left Figure</b>: Rendering Benchmark. <b>Right Figure</b>: Unprojecting/Lifting Benchmark. All axes are log-scaled.
           </p>
         </div>
         <div class="content has-text-centered">
@@ -180,6 +180,21 @@
         </div>
         <br>
 
+        <h2 class="title is-5">Generalizable 3D Hash Structures & A Versatile 3D Framework</h2>
+        <div class="content has-text-justified">
+          <p>
+            A big advantage of <b><em>Lightplane</em></b> is that it is designed to be generalizable to various 3D hash structures.
+            We experiment it on <em> Voxel Grids</em> and <em>TriPlanes</em>, but it can be easily extended to other structures likes <em>Hash Table</em> and <em>HexPlane</em> (working in progress).
+            It provides a general way for information exchange between 2D and 3D (i.e. rendering and lifting) for various 3D hash structures.
+          </p>
+          <p>
+            Combining <b><em>Lightplane Renderer</em></b> and <b><em>Splatter</em></b>, we estiable a versatile 3D framework for 3D reconstruction and generation.
+          </p>
+        </div>
+        <div class="content has-text-centered">
+            <img id="teaser" src="resources/splash.png" alt="Teaser image" style="width: 100%;">
+        </div>
+        <br>
 
         <h2 class="title is-5">Boosting Large 3D Reconstruction and Generation Models </h2>
         <div class="content has-text-justified">
