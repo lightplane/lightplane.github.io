@@ -182,12 +182,17 @@
 
         <h2 class="title is-5">Memory-Efficient Components</h2>
         <div class="content has-text-justified">
-          <p>
+          <!-- <p>
             Compared to existing implementations of <span style="color: rgb(96, 130, 182)">rendering and lifting (unprojceting)</span>, <span style="color: rgb(137, 207, 240)"><b><em>Lightplane Renderer</em></b> and <b><em>Splatter</em></b></span> exhibits over <b>3~4 orders of magnitude memory saving</b>  at comparable speed. <b>Left Figure</b>: Rendering Benchmark. <b>Right Figure</b>: Unprojecting/Lifting Benchmark. All axes are log-scaled.
+          </p> -->
+          <p>
+          Both <b><em>Lightplane Renderer</em></b> and <b><em>Splatter</em></b> are desinged to be highly memory-efficient, exhibiting over <b>3~4 orders of magnitude memory saving</b>  at comparable speed. 
+          Taking rendering as an example, <b><em>Lightplane Renderer</em></b> can differentiable render batches of <b><em>FullHD</em></b> (1920 x 1080) while consuming less than a GigaByte of GPU memory.
+          All axes are log-scaled.
           </p>
         </div>
         <div class="content has-text-centered">
-            <img id="teaser" src="resources/memory_all.png" alt="Teaser image" style="width: 100%;">
+            <img id="teaser" src="resources/lightplane_splash.png" alt="Teaser image" style="width: 100%;">
         </div>
         <br>
 
