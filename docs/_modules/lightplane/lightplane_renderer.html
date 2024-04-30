@@ -15,7 +15,7 @@
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -44,6 +44,7 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Lightplane Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../feature_grids.html">3D feature grids</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../rendering_rays.html">Rendering rays</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../lightplane_renderer.html">Lightplane Renderer</a></li>
@@ -144,7 +145,7 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This is the main functional interface for the Lightplane Renderer.</span>
-<span class="sd">    It outputs the the final color `c`, alpha value `m` and the expected</span>
+<span class="sd">    It outputs the the final color `c`, negative_log_transmittance `T_N` and the expected</span>
 <span class="sd">    ray-termination length `r` (analogous to depth) of each ray&#39;s pixel.</span>
 
 <span class="sd">    For `N=num_samples` equispaced 3D points `pt_3d_i` between the `near` and</span>
@@ -290,11 +291,11 @@
 <span class="sd">        triton_num_warps: The number of warps for Triton.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        expected_depth: The expected depth of the ray.</span>
+<span class="sd">        ray_length_render: The rendered ray-termination length `r (i.e. distance along the ray).</span>
 
 <span class="sd">        negative_log_transmittances: The negative log transmittances of the ray.</span>
 
-<span class="sd">        expected_features: The expected features of the ray.</span>
+<span class="sd">        feature_render: The rendered features of the ray.</span>
 
 <span class="sd">    References:</span>
 <span class="sd">        [1] MERF: Memory-Efficient Radiance Fields for Real-time View Synthesis in</span>
@@ -322,7 +323,7 @@
         <span class="n">decoder_params</span><span class="o">.</span><span class="n">n_hidden_opacity</span><span class="p">,</span>
         <span class="n">decoder_params</span><span class="o">.</span><span class="n">n_hidden_color</span><span class="p">,</span>
     <span class="p">)</span>
-    
+
     <span class="n">color_chn</span> <span class="o">=</span> <span class="n">decoder_params</span><span class="o">.</span><span class="n">color_chn</span>
 
     <span class="k">if</span> <span class="n">inject_noise_sigma</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
@@ -332,9 +333,9 @@
         <span class="n">inject_noise_seed</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="p">(</span>
-        <span class="n">expected_depth</span><span class="p">,</span>
+        <span class="n">ray_length_render</span><span class="p">,</span>
         <span class="n">negative_log_transmittances</span><span class="p">,</span>
-        <span class="n">expected_features</span><span class="p">,</span>
+        <span class="n">feature_render</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">=</span> <span class="n">LightplaneFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
         <span class="n">grid</span><span class="p">,</span>
         <span class="n">grid_sizes</span><span class="p">,</span>
@@ -373,15 +374,15 @@
 
     <span class="c1"># crop the features to the requested number of channels</span>
     <span class="k">if</span> <span class="n">color_chn_triton</span> <span class="o">&gt;</span> <span class="n">color_chn</span><span class="p">:</span>
-        <span class="n">expected_features</span> <span class="o">=</span> <span class="n">expected_features</span><span class="p">[:,</span> <span class="p">:</span><span class="n">color_chn</span><span class="p">]</span>
+        <span class="n">feature_render</span> <span class="o">=</span> <span class="n">feature_render</span><span class="p">[:,</span> <span class="p">:</span><span class="n">color_chn</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">n_rays_padded</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">expected_depth</span><span class="p">,</span> <span class="n">negative_log_transmittances</span><span class="p">,</span> <span class="n">expected_features</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ray_length_render</span><span class="p">,</span> <span class="n">negative_log_transmittances</span><span class="p">,</span> <span class="n">feature_render</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">t</span><span class="p">[:</span><span class="o">-</span><span class="n">n_rays_padded</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">[</span><span class="n">expected_depth</span><span class="p">,</span> <span class="n">negative_log_transmittances</span><span class="p">,</span> <span class="n">expected_features</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ray_length_render</span><span class="p">,</span> <span class="n">negative_log_transmittances</span><span class="p">,</span> <span class="n">feature_render</span><span class="p">]</span>
         <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">expected_depth</span><span class="p">,</span> <span class="n">negative_log_transmittances</span><span class="p">,</span> <span class="n">expected_features</span></div>
+    <span class="k">return</span> <span class="n">ray_length_render</span><span class="p">,</span> <span class="n">negative_log_transmittances</span><span class="p">,</span> <span class="n">feature_render</span></div>
 
 
 
@@ -544,13 +545,11 @@
         <span class="n">numel_params_color</span> <span class="o">=</span> <span class="n">_get_mlp_n_params</span><span class="p">(</span>
             <span class="n">dim_in_color</span><span class="p">,</span> <span class="n">mlp_dim_hidden_color</span><span class="p">,</span> <span class="n">dim_out_color</span><span class="p">,</span> <span class="n">mlp_n_layers_color</span>
         <span class="p">)</span>
-        
+
         <span class="n">expected_mlp_params_numel</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">numel_params_trunk</span> <span class="o">+</span> <span class="n">numel_params_opacity</span> <span class="o">+</span> <span class="n">numel_params_color</span>
         <span class="p">)</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">expected_mlp_params_numel</span> <span class="o">==</span> <span class="n">mlp_params</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
-        <span class="p">),</span> <span class="p">(</span>
+        <span class="k">assert</span> <span class="n">expected_mlp_params_numel</span> <span class="o">==</span> <span class="n">mlp_params</span><span class="o">.</span><span class="n">numel</span><span class="p">(),</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;The number of elements in mlp param should be </span><span class="si">{</span><span class="n">expected_mlp_params_numel</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="sa">f</span><span class="s2">&quot; Got </span><span class="si">{</span><span class="n">mlp_params</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span><span class="si">}</span><span class="s2"> instead.&quot;</span>
         <span class="p">)</span>
@@ -564,8 +563,8 @@
         <span class="n">negative_log_transmittance</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
             <span class="n">num_rays</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span>
         <span class="p">)</span>
-        <span class="n">expected_depth</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_rays</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="n">expected_features</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+        <span class="n">ray_length_render</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_rays</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">feature_render</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
             <span class="n">num_rays</span><span class="p">,</span> <span class="n">num_render_channels</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span>
         <span class="p">)</span>
 
@@ -601,8 +600,8 @@
         <span class="n">fw_kernel</span><span class="p">[</span><span class="n">grid</span><span class="p">](</span>
             <span class="c1"># ---- output -----</span>
             <span class="n">_contiguous</span><span class="p">(</span><span class="n">negative_log_transmittance</span><span class="p">),</span>
-            <span class="n">_contiguous</span><span class="p">(</span><span class="n">expected_depth</span><span class="p">),</span>
-            <span class="n">_contiguous</span><span class="p">(</span><span class="n">expected_features</span><span class="p">),</span>
+            <span class="n">_contiguous</span><span class="p">(</span><span class="n">ray_length_render</span><span class="p">),</span>
+            <span class="n">_contiguous</span><span class="p">(</span><span class="n">feature_render</span><span class="p">),</span>
             <span class="c1"># ---- grid ----</span>
             <span class="n">_contiguous</span><span class="p">(</span><span class="n">feature_grid</span><span class="p">),</span>
             <span class="n">_contiguous</span><span class="p">(</span><span class="n">feature_grid_sizes</span><span class="p">),</span>
@@ -702,14 +701,14 @@
             <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">time_start</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fw time = </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">1.5f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">expected_depth</span><span class="p">,</span> <span class="n">negative_log_transmittance</span><span class="p">,</span> <span class="n">expected_features</span>
+        <span class="k">return</span> <span class="n">ray_length_render</span><span class="p">,</span> <span class="n">negative_log_transmittance</span><span class="p">,</span> <span class="n">feature_render</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span>
         <span class="n">ctx</span><span class="p">,</span>
-        <span class="n">grad_expected_depth</span><span class="p">,</span>
+        <span class="n">grad_ray_length_render</span><span class="p">,</span>
         <span class="n">grad_negative_log_transmittances</span><span class="p">,</span>
-        <span class="n">grad_expected_features</span><span class="p">,</span>
+        <span class="n">grad_feature_render</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="n">PROFILE</span><span class="p">:</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
@@ -792,9 +791,9 @@
             <span class="nb">int</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">use_scaffold</span><span class="p">),</span>
             <span class="nb">int</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">use_separate_color_grid</span><span class="p">),</span>
             <span class="c1"># ----- gradients -----</span>
-            <span class="n">_contiguous</span><span class="p">(</span><span class="n">grad_expected_depth</span><span class="p">),</span>
+            <span class="n">_contiguous</span><span class="p">(</span><span class="n">grad_ray_length_render</span><span class="p">),</span>
             <span class="n">_contiguous</span><span class="p">(</span><span class="n">grad_negative_log_transmittances</span><span class="p">),</span>
-            <span class="n">_contiguous</span><span class="p">(</span><span class="n">grad_expected_features</span><span class="p">),</span>
+            <span class="n">_contiguous</span><span class="p">(</span><span class="n">grad_feature_render</span><span class="p">),</span>
             <span class="c1"># ----- gradients output -----</span>
             <span class="n">_contiguous</span><span class="p">(</span><span class="n">grad_feature_grid</span><span class="p">),</span>
             <span class="n">_contiguous</span><span class="p">(</span><span class="n">grad_color_feature_grid</span><span class="p">),</span>

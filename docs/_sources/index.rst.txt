@@ -8,6 +8,7 @@ Memory efficient radiance field renderer and splatter.
     :caption: User Guide
 
     introduction.md
+    examples.md
     feature_grids.md
     rendering_rays.md
     lightplane_renderer.md

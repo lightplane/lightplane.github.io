@@ -1,6 +1,14 @@
+<img src="_static/assets/teaser_video_gif.gif" width="800">
+
 # Introduction
 
-Lightplane implements a highly memory-efficient differentiable radiance field renderer, and a module for unprojecting features from images to 3D grids, described in our technical report: *[Lightplane: Highly-Scalable Components for Neural 3D Fields]*(TODO).
+Lightplane implements a highly memory-efficient differentiable radiance field renderer, and a module for unprojecting features from images to general 3D grids, described in our paper: 
+
+**Lightplane: Highly-Scalable Components for Neural 3D Fields**
+
+*Ang Cao*, *Justin Johnson*, *Andrea Vedaldi*, *David Novotny* 
+
+[Project Page](https://lightplane.github.io/) | [Arxiv](TODO) | [Docs](https://lightplane.github.io/docs/)
 
 **Lightplane can differentiably render batches of FullHD images** while consuming **less than a GigaByte** of GPU memory.
 Rendering / backpropagation speed is comparable to existing methods, which however exceed memory limits already for a single QVGA image (640x480).
@@ -11,7 +19,7 @@ As such, Lightplane's memory and compute efficiency allows to drastically scale-
 
 ## Documentation
 
-Please visit the [documentation website](TODO) for a detailed project and API description.
+Please visit the [documentation website](https://lightplane.github.io/docs/) for a detailed project and API description.
 
 
 ## Overview
@@ -51,6 +59,7 @@ pip install -e .
     1) [Install PyTorch3D](https://github.com/facebookresearch/pytorch3d/blob/main/INSTALL.md)
     2) `pip install notebook`
     3) `pip install imageio opencv-python lpips matplotlib`
+    4) `pip install configargparse tqdm`
 
 
 ## Usage
@@ -132,7 +141,7 @@ splatted_grid = splatter(
 
 ## Examples
 
-Please visit [examples](https://github.com/facebookresearch/lightplane/examples) for more detailed example python scripts and jupyter notebooks.
+Please visit [examples](./examples.md) for more detailed example python scripts and jupyter notebooks.
 
 
 ## TODO
@@ -144,7 +153,7 @@ We plan to implement two major new functionalities:
 
 ## License
 
-Lightplane is released under the [Apache 2.0 License](https://github.com/facebookresearch/lightplane/LICENSE).
+Lightplane is released under the [BSD 3.0 License](https://github.com/facebookresearch/lightplane/tree/main/LICENSE).
 
 
 

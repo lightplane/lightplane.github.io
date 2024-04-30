@@ -16,12 +16,12 @@
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="3D feature grids" href="feature_grids.html" />
+    <link rel="next" title="Lightplane Examples" href="examples.html" />
     <link rel="prev" title="Lightplane" href="index.html" /> 
 </head>
 
@@ -57,6 +57,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#citation">Citation</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Lightplane Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="feature_grids.html">3D feature grids</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rendering_rays.html">Rendering rays</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lightplane_renderer.html">Lightplane Renderer</a></li>
@@ -99,16 +100,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="introduction">
+  <img src="_static/assets/teaser_video_gif.gif" width="800">
+<section id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h1>
-<p>Lightplane implements a highly memory-efficient differentiable radiance field renderer, and a module for unprojecting features from images to 3D grids, described in our technical report: <em>[Lightplane: Highly-Scalable Components for Neural 3D Fields]</em>(TODO).</p>
+<p>Lightplane implements a highly memory-efficient differentiable radiance field renderer, and a module for unprojecting features from images to general 3D grids, described in our paper:</p>
+<p><strong>Lightplane: Highly-Scalable Components for Neural 3D Fields</strong></p>
+<p><em>Ang Cao</em>, <em>Justin Johnson</em>, <em>Andrea Vedaldi</em>, <em>David Novotny</em></p>
+<p><a class="reference external" href="https://lightplane.github.io/">Project Page</a> | <a class="reference internal" href="#TODO"><span class="xref myst">Arxiv</span></a> | <a class="reference external" href="https://lightplane.github.io/docs/">Docs</a></p>
 <p><strong>Lightplane can differentiably render batches of FullHD images</strong> while consuming <strong>less than a GigaByte</strong> of GPU memory.
 Rendering / backpropagation speed is comparable to existing methods, which however exceed memory limits already for a single QVGA image (640x480).
 As such, Lightplane’s memory and compute efficiency allows to drastically scale-up the latest neural field methods.</p>
 <img src="_static/assets/lightplane_splash.png" width="800">
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
-<p>Please visit the <a class="reference internal" href="#TODO"><span class="xref myst">documentation website</span></a> for a detailed project and API description.</p>
+<p>Please visit the <a class="reference external" href="https://lightplane.github.io/docs/">documentation website</a> for a detailed project and API description.</p>
 </section>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
@@ -151,6 +156,7 @@ pip<span class="w"> </span>install<span class="w"> </span>plotly
 <li><p><a class="reference external" href="https://github.com/facebookresearch/pytorch3d/blob/main/INSTALL.md">Install PyTorch3D</a></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">notebook</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">imageio</span> <span class="pre">opencv-python</span> <span class="pre">lpips</span> <span class="pre">matplotlib</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">configargparse</span> <span class="pre">tqdm</span></code></p></li>
 </ol>
 </li>
 </ol>
@@ -229,7 +235,7 @@ pip<span class="w"> </span>install<span class="w"> </span>plotly
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<p>Please visit <a class="reference external" href="https://github.com/facebookresearch/lightplane/examples">examples</a> for more detailed example python scripts and jupyter notebooks.</p>
+<p>Please visit <a class="reference internal" href="examples.html"><span class="std std-doc">examples</span></a> for more detailed example python scripts and jupyter notebooks.</p>
 </section>
 <section id="todo">
 <h2>TODO<a class="headerlink" href="#todo" title="Link to this heading"></a></h2>
@@ -241,7 +247,7 @@ pip<span class="w"> </span>install<span class="w"> </span>plotly
 </section>
 <section id="license">
 <h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
-<p>Lightplane is released under the <a class="reference external" href="https://github.com/facebookresearch/lightplane/LICENSE">Apache 2.0 License</a>.</p>
+<p>Lightplane is released under the <a class="reference external" href="https://github.com/facebookresearch/lightplane/tree/main/LICENSE">BSD 3.0 License</a>.</p>
 </section>
 <section id="citation">
 <h2>Citation<a class="headerlink" href="#citation" title="Link to this heading"></a></h2>
@@ -261,7 +267,7 @@ pip<span class="w"> </span>install<span class="w"> </span>plotly
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Lightplane" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="feature_grids.html" class="btn btn-neutral float-right" title="3D feature grids" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="examples.html" class="btn btn-neutral float-right" title="Lightplane Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
